@@ -1,0 +1,1 @@
+php build_foa_20151013.php platform=android isdebug=true bigversion=v1 tag=test lang=zh use_sdk=true use_localserverlist=true toapple=false path=G:\XA-test

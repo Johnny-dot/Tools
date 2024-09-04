@@ -1,0 +1,16 @@
+{
+    "files": [
+        "main.py",
+        "sample/qt/src/mainwindow.ui",
+        "sample/qt/src/pyui/DragListWidget.py",
+        "sample/qt/src/pyui/GridProgressBar.py",
+        "sample/qt/src/pyui/QTextEditLogger.py",
+        "sample/qt/src/widget/BranchCoverWidget.ui",
+        "sample/qt/src/widget/DetectDuplicateFilesWidget.ui",
+        "sample/qt/src/widget/FilesMD5Snapshot.ui",
+        "sample/qt/src/widget/FoaBuildWidget.ui",
+        "sample/qt/src/widget/FoaDetectWidget.ui",
+        "sample/qt/src/widget/QuicParasAddTips.ui",
+        "sample/qt/src/widget/ResConvertWidget.ui"
+    ]
+}

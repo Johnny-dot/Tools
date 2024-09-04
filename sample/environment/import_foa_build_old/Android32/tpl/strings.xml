@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">xxx</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="upay_app_name">Upay_Sdk_Library</string>
+
+    <string name="upay_pay">确认支付</string>
+    <string name="upay_hfb_dingdan">订单支付</string>
+    <string name="upay_hfb_productname">商品名称：</string>
+    <string name="upay_hfb_movietickets">电影票</string>
+    <string name="upay_hfb_orderprice">订单价格：</string>
+    <string name="upay_hfb_oneyuan">1元(不含通信费)</string>
+    <string name="upay_hfb_servicephone">客服电话：</string>
+    <string name="upay_hfb_servicephonenumber">4008319852</string>	
+    <string name="upay_hfb_captch">    验证码：</string>
+    <string name="upay_hfb_getcaptch">获取验证码</string>
+
+    <string name="upay_hfb_confirmpay">确认支付</string>
+    <string name="upay_hfb_tariffdescription">资费说明</string>	
+    <string name="upay_hfb_payphone">支付手机：</string>
+    <string name="upay_hfb_chinamobilephone">中国移动手机号码</string>
+    <string name="upay_hfb_submitorder">提交订单</string>
+    <string name="upay_hfb_replysms">请您按照10658008的短信提示确认回复后，点击“购买完成”。谢谢！</string>
+    <string name="upay_hfb_purchasecompleted">购买完成</string>
+    <string name="upay_hfb_notreceive">如您未收到10658008的短信提示请点击</string>
+    <string name="upay_hfb_readmission">重新接收</string>
+    <string name="upay_hfb_advisoryservice">* 如未收到短信请咨询中国移动通信账户支付客服中心：4006125880(只收市话费，无长途话费)；
+            125880只支付移动手机，0.3元/分，无长途话费。 
+            \n* 有短信签名功能的手机，请回复前去掉签名的自动附加功能，以免回复系统无法识别拒绝支付。</string>
+    <string name="upay_hfb_success">购买成功</string>
+    <string name="upay_hfb_thanks">感谢您使用通信账户支付服务。</string>
+    <string name="upay_hfb_return">返  回</string>
+    <string name="upay_hfb_name">通讯支付</string>
+
+    <string name="upay_smspay">短信支付</string>
+    <string name="upay_cardpay">充值卡充值</string>
+    <string name="upay_yinlian">银联支付</string>
+    <string name="upay_updatetips">更新提示:</string>
+    <string name="upay_upaygame">合作游戏</string>
+    <string name="upay_note">注意：由于运营商相关规定，用户在支付前要确保话费余额充足，且单位时间内操作不宜频繁，若使用话费支付失败，建议关闭其他拦截软件，或选择其他支付方式。</string>
+    <string name="upay_forgotpassword">忘记密码？</string>
+    <string name="upay_autologin">自动登录</string>
+    <string name="upay_modification">修改</string>
+    <string name="upay_blank"></string>
+    <string name="upay_switchingaccount">切换账号</string>
+    <string name="upay_sure_toast">确认支付，即可购买！</string>
+    <string name="upay_amount">消费金额：</string>
+    <string name="upay_productname">商品名称：</string>
+    <string name="upay_description">商品描述：</string>
+
+</resources>

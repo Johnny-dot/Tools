@@ -1,0 +1,29 @@
+路径说明：
+
+根目录：chengxu\trunk\
+客户端路径：chengxu\trunk\XA
+foa打包工具路径： chengxu\trunk\XA\prebuild
+foa打包过程中用到的临时路径： chengxu\trunk\XA\client 
+(PS:foa打包的时候会把XA中的code和res文件夹拷贝到此目录)
+
+转格式相关：
+
+ios打包需要图片资源转PVR
+工具目录：XA\prebuild\
+文件：
+    PVRTexTool.exe
+    compress.lua
+
+命令：start fancy-dev.exe -d compress.lua
+
+android打包需要图片资源转ETC
+工具目录：XA\prebuild\
+文件：
+    code.lua
+    convert.exe
+    etcpack.exe
+    atl100.dll
+    mfc100.dll
+    msvcp100.dll
+    msvcr100.dll
+    vcomp100.dll

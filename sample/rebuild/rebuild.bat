@@ -1,0 +1,1 @@
+pyinstaller --distpath "E:\\kuangbao\\Tools2" mainwindow.spec

@@ -1,0 +1,1 @@
+luajit: temp/code\config\cfg_ljdl.lua:4: '}' expected (to close '{' at line 1) near 'items'

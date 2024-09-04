@@ -1,0 +1,42 @@
+{
+    "environment": {
+        "foaBuild": "sample/environment/import_foa_build",
+        "resConvert": "sample/environment/import_res_convert",
+        "foaDetect": "sample/environment/import_foa_detect",
+        "build": "sample/environment/import_foa_build_old/build",
+        "Android32": "sample/environment/import_foa_build_old/Android32",
+        "Android64": "sample/environment/import_foa_build_old/Android64",
+        "mclient": "sample/environment/import_foa_build_old/mclient"
+    },
+    "snapshot_binding": {
+        "devB": {
+            "check": false,
+            "cfgPath_android": "",
+            "foa_outpath1": "",
+            "foa_outpath2": ""
+        },
+        "tagA": {
+            "check": true,
+            "cfgPath_android": "",
+            "foa_outpath1": "E:/app/httpd-2.4.62-240718-win64-VS17/Apache24/htdocs",
+            "foa_outpath2": ""
+        },
+        "devA": {
+            "check": false,
+            "cfgPath_android": "",
+            "cfgPath_mclient": "",
+            "cfgPath_ios": "",
+            "foa_outpath1": "E:/app/httpd-2.4.62-240718-win64-VS17/Apache24/htdocs",
+            "foa_outpath2": ""
+        },
+        "trunk": {
+            "check": false,
+            "cfgPath_android": "",
+            "foa_outpath1": "",
+            "foa_outpath2": ""
+        }
+    },
+    "branches": {
+        "devA": "E:/kuangbao/Test"
+    }
+}

@@ -1,0 +1,1 @@
+luajit: temp/code\version.lua:9: unexpected symbol near '='

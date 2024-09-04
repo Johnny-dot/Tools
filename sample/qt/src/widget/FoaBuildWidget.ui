@@ -1,0 +1,1260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FoaBuildWidget</class>
+ <widget class="QWidget" name="FoaBuildWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>911</width>
+    <height>440</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="pushButton_build">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>20</y>
+     <width>100</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    background-color: #B0B0B0;  /* 浅灰色 */
+    color: white;               /* 白色文本 */
+    border-radius: 10px;        /* 圆角边框 */
+    padding: 5px 15px;          /* 内边距 */
+}
+
+QPushButton:hover {
+    background-color: #A0A0A0;  /* 鼠标悬停时的颜色 */
+}
+
+QPushButton:pressed {
+    background-color: #909090;  /* 按下时的颜色 */
+}
+</string>
+   </property>
+   <property name="text">
+    <string>启动</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>120</y>
+     <width>891</width>
+     <height>311</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>构建参数</string>
+   </property>
+   <widget class="QComboBox" name="comboBox_platform">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>140</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>android</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>ios</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>mclient</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_20">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>145</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>platform，目标平台</string>
+    </property>
+    <property name="statusTip">
+     <string>platform，目标平台</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>平台</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_21">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>205</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>lang，语言包标识</string>
+    </property>
+    <property name="statusTip">
+     <string>lang，语言包标识</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>语言</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_lang">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>200</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>en</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>cn</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>ar</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>be</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>da</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>de</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>es</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>fr</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>it</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>pt</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>th</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>tr</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>tw</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_is64">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>260</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_22">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>265</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>is64，是否是64位</string>
+    </property>
+    <property name="statusTip">
+     <string>is64，是否是64位</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>64位</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_channel">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>20</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_23">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>25</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>channel，标记|频道</string>
+    </property>
+    <property name="statusTip">
+     <string>channel，标记|频道</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string extracomment="dddd">*Tag</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_sysversion">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>80</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_24">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>85</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>sysversion，登录界面会显示的版本号</string>
+    </property>
+    <property name="statusTip">
+     <string>sysversion，登录界面会显示的版本号</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>系统版本</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_bigversion">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>140</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_25">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>145</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>bigversion，大版本</string>
+    </property>
+    <property name="toolTipDuration">
+     <number>-1</number>
+    </property>
+    <property name="statusTip">
+     <string>bigversion，大版本</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>大版本</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_foaName">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>200</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_27">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>205</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>foaName，foa名</string>
+    </property>
+    <property name="statusTip">
+     <string>foaName，foa名</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>foa名</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_28">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>265</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>focName，foc名</string>
+    </property>
+    <property name="statusTip">
+     <string>focName，foc名</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>foc名</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_focName">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>260</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="placeholderText">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_targetRes">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>260</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>如:res_etc</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_useSDK">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>20</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_useLocals">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>80</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_isDebug">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>20</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_sandBox">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>80</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QComboBox" name="comboBox_testapp">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>140</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_29">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>145</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>istestapp，是否为测试包的标识，此模式下，不能新建角色，切换账号，充值，下载二包等</string>
+    </property>
+    <property name="statusTip">
+     <string>istestapp，是否为测试包的标识，此模式下，不能新建角色，切换账号，充值，下载二包等</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>测试服专用</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_30">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>25</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>use_sdk，是否使用sdk</string>
+    </property>
+    <property name="statusTip">
+     <string>use_sdk，是否使用sdk</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>SDK</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_31">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>85</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>use_localserverlist，是否使用本地服列表</string>
+    </property>
+    <property name="statusTip">
+     <string>use_localserverlist，是否使用本地服列表</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>本地服</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_32">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>25</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>isdebug，此模式下，客户端会用弱表额外记录swf、node、dialog等信息，显示帧率，开放GM命令等</string>
+    </property>
+    <property name="statusTip">
+     <string>isdebug，此模式下，客户端会用弱表额外记录swf、node、dialog等信息，显示帧率，开放GM命令等</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Debug</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_33">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>85</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>sandbox，此模式下，部分SDK命令会拼接sandbox|true，反之亦然</string>
+    </property>
+    <property name="statusTip">
+     <string>sandbox，此模式下，部分SDK命令会拼接sandbox|true，反之亦然</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>沙盒</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_appstore">
+    <property name="geometry">
+     <rect>
+      <x>750</x>
+      <y>200</y>
+      <width>113</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>true</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>false</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>''</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_34">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>205</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>isAppleStoreReview，与istestapp类似，一个标识</string>
+    </property>
+    <property name="statusTip">
+     <string>isAppleStoreReview，与istestapp类似，一个标识</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>苹果提审</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_allBranchesTip_26">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>265</y>
+      <width>71</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微软雅黑</family>
+      <pointsize>11</pointsize>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>target_res，指定要被打入包体的资源文件夹</string>
+    </property>
+    <property name="statusTip">
+     <string>target_res，指定要被打入包体的资源文件夹</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>目标资源</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_allBranchesTip">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>操作分支</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_allBranches">
+   <property name="geometry">
+    <rect>
+     <x>84</x>
+     <y>5</y>
+     <width>151</width>
+     <height>30</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_pathSet">
+   <property name="geometry">
+    <rect>
+     <x>710</x>
+     <y>10</y>
+     <width>24</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_allBranchesTip_2">
+   <property name="geometry">
+    <rect>
+     <x>405</x>
+     <y>10</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>分支路径</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_pathSet">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>10</y>
+     <width>231</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+   <property name="placeholderText">
+    <string>当前分支指定路径</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_allBranchesTip_3">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>50</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>参数预设</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_quicParas">
+   <property name="geometry">
+    <rect>
+     <x>84</x>
+     <y>45</y>
+     <width>151</width>
+     <height>30</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_quicParasAdd">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>47</y>
+     <width>30</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="toolTip">
+    <string>新增一条参数预设</string>
+   </property>
+   <property name="statusTip">
+    <string>新增一条参数预设</string>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_quicParasSync">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>47</y>
+     <width>30</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="toolTip">
+    <string>将当前面板的参数保存到预设中</string>
+   </property>
+   <property name="statusTip">
+    <string>将当前面板的参数保存到预设中</string>
+   </property>
+   <property name="text">
+    <string>Sync</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_quicParasDel">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>47</y>
+     <width>30</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+    </font>
+   </property>
+   <property name="toolTip">
+    <string>删除当前选中的预设</string>
+   </property>
+   <property name="statusTip">
+    <string>删除当前选中的预设</string>
+   </property>
+   <property name="text">
+    <string>Del</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_snapshot">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>50</y>
+     <width>231</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+   <property name="placeholderText">
+    <string>指定历史版本的资源快照</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_snapshotSet">
+   <property name="geometry">
+    <rect>
+     <x>710</x>
+     <y>50</y>
+     <width>24</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioButton_snapshot">
+   <property name="geometry">
+    <rect>
+     <x>385</x>
+     <y>51</y>
+     <width>81</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>资源比对</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_allBranchesTip_4">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>90</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>内网地址</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_outPath1">
+   <property name="geometry">
+    <rect>
+     <x>324</x>
+     <y>90</y>
+     <width>24</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_outPath1">
+   <property name="geometry">
+    <rect>
+     <x>84</x>
+     <y>90</y>
+     <width>231</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+   <property name="placeholderText">
+    <string>指定FOA的内网输出路径</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_allBranchesTip_5">
+   <property name="geometry">
+    <rect>
+     <x>405</x>
+     <y>90</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+     <pointsize>11</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>线上地址</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="toolButton_outPath2">
+   <property name="geometry">
+    <rect>
+     <x>710</x>
+     <y>90</y>
+     <width>24</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_outPath2">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>90</y>
+     <width>231</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微软雅黑</family>
+    </font>
+   </property>
+   <property name="placeholderText">
+    <string>指定FOA的线上输出路径</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

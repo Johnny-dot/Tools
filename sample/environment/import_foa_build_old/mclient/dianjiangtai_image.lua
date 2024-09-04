@@ -1,0 +1,12 @@
+_G.dianjiangtai_image={
+"res/env/textures/lc_ls_hd_bagua_sky_01.png",
+"res/env/textures/lc_ls_zc_03.png",
+"res/env/textures/lwj_ls_zc_24-alpha.png",
+"res/env/textures/lwj_ls_zc_24.png",
+"res/env/textures/wangc_ls_xinshoucun_grass02.png",
+"res/env/textures/xs_ls_hd_djt_01.png",
+"res/env/textures/xs_ls_hd_djt_02.png",
+"res/env/textures/xs_ls_hd_djt_03.png",
+"res/env/textures/xs_ls_hd_djt_04.png",
+"res/env/textures/xs_ls_hd_djt_06.png",
+}

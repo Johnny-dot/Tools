@@ -1,0 +1,1 @@
+fancy3d-foa-tool.exe foa_xxx.zip grouplist.txt

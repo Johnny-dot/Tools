@@ -1,0 +1,16 @@
+增加方法实现对非2的幂的图片的etc/pvr压缩支持。
+原理:拉伸尺寸后压缩，额外记录原始尺寸
+
+例：一张77*77的图片test.png 转换为etc
+1.获取原始尺寸
+size = _mf:getImageSize(filename)
+2.目标图片拉伸到规格尺寸
+_mf:resizeImagePowerOfTwo(filename, filename)
+3.压缩
+_sys:command("etcpack " .. filename .. " . -c etc", true, false)
+4.增加文件头
+_mf:addImageHeader(filename, size.width, size.height)
+
+_ModelFactory增加addImageHeader接口，可以在图片前面附加长宽值来当作图片原始尺寸。
+_ModelFactory增加resizeImagePowerOfTwo接口，把图片拉伸到最近的2的幂。
+

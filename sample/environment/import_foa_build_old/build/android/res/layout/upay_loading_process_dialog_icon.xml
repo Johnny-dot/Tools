@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout 
+     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    >
+    
+    <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+	<ProgressBar android:id="@+id/loading_process_dialog_progressBar"
+		android:layout_width="81dip" android:layout_height="81dip"
+		android:indeterminate="false" android:indeterminateDrawable="@drawable/upay_dialog_icon" 
+		android:layout_gravity="center_horizontal"/>
+	
+		<ImageView 
+		android:layout_width="81dip"
+		android:layout_height="81dip" 
+		android:background="@drawable/upay_loading_logo"
+		android:layout_gravity="center_horizontal"
+		android:visibility="gone"/>
+	
+</FrameLayout>
+    
+    
+</LinearLayout>

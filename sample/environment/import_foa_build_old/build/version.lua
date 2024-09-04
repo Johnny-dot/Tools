@@ -1,0 +1,10 @@
+time = '11231520'
+version = 0
+mainPlugin = 'plugin.fob'
+name = 'rg'
+path = 'temp'
+platform = "android"
+out = 'output/android_zs_0_11231520'
+code = 'code/main.lua'
+foaName = 'afoa'
+focName = ''

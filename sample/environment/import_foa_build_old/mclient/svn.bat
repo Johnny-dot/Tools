@@ -1,0 +1,1 @@
+svnVersion %1>./svn

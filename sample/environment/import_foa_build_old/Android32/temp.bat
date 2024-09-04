@@ -1,0 +1,2 @@
+cd sample/environment/Android32
+php build_foa_20151013.php platform=android bigversion=v1 isdebug=false tag=and_hwfb use_sdk=true use_localserverlist=false lang=en path=E:/kuangbao/devA/XA sysversion=8.1.3 is64=false

@@ -1,0 +1,2 @@
+*.foa filter=lfs diff=lfs merge=lfs -text
+*.pack filter=lfs diff=lfs merge=lfs -text

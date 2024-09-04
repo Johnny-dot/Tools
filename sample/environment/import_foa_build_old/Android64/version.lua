@@ -1,0 +1,10 @@
+time = '08281209'
+version = 54539
+mainPlugin = 'plugin.fob'
+name = 'rghw'
+path = 'temp'
+platform = "android"
+out = 'output/android_and_hwzs64_54539_08281209'
+code = 'code/main.lua'
+foaName = ''
+focName = ''

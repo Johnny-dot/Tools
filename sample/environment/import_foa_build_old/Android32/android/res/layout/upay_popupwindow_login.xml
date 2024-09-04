@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F1F1F1" >
+
+    <!-- <ImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:src="@drawable/upay_ui_login_logo_upay" /> -->
+
+    <RelativeLayout
+        android:id="@+id/rl_username"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/iv_logo"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:background="#FFFFFF" >
+
+        <RelativeLayout
+            android:id="@+id/rl_username_n"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#2BACE4" >
+
+            <ImageView
+                android:id="@+id/iv_username_img"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/upay_ui_icon_posenal" />
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/et_username"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@id/rl_username_n"
+            android:layout_toRightOf="@id/rl_username_n"
+            android:background="@null"
+            android:inputType="number"
+            android:textSize="13sp" 
+            android:textColor="#000000"/>
+
+        
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rl_password"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/rl_username"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:background="#FFFFFF" >
+
+        <RelativeLayout
+            android:id="@+id/rl_password"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#2BACE4" >
+
+            <ImageView
+                android:id="@+id/iv_password_img"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/upay_ui_icon_password" />
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/et_password"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/rl_password"
+            android:background="@null"
+            android:inputType="textPassword"
+            android:textSize="13sp" 
+            android:textColor="#000000"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_forgetPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/rl_password"
+        android:layout_below="@+id/rl_password"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/upay_forgotpassword"
+        android:textColor="@drawable/upay_selector_forgetpassword"
+        android:textSize="13sp" />
+
+    <RelativeLayout
+        android:id="@+id/rl_autoLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/tv_forgetPassword"
+        android:layout_alignLeft="@+id/rl_password"
+        android:layout_alignTop="@+id/tv_forgetPassword"
+        android:clickable="true" >
+
+        <ImageView
+            android:id="@+id/iv_autoLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="15dp"
+            android:src="@drawable/upay_ui_icon_check" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="1dp"
+            android:layout_toRightOf="@id/iv_autoLogin"
+            android:text="@string/upay_autologin"
+            android:textColor="@drawable/upay_selector_autologin_text"
+            android:textSize="13sp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_loginAndRegister"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:layout_alignLeft="@+id/rl_password"
+        android:layout_alignRight="@+id/rl_password"
+        android:layout_below="@+id/rl_password"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/bt_register"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_marginRight="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/upay_selector_btn_register"
+            android:width="50dp" />
+
+        <Button
+            android:id="@+id/bt_login"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/upay_selector_btn_login"
+            android:width="50dp" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="45dp"
+        android:layout_height="1dp"
+        android:layout_alignLeft="@+id/ll_loginAndRegister"
+        android:layout_alignRight="@+id/tv_forgetPassword"
+        android:layout_below="@+id/ll_loginAndRegister" />
+
+</RelativeLayout>

@@ -1,0 +1,1 @@
+fancy3d-foa-tool.exe -c rg.foa 1.txt

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#00FFFFFF"
+    android:orientation="vertical" 
+    android:tag="payresults">
+
+    <include android:visibility="gone" layout="@layout/hfb_title" />
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:fillViewport="true" 
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/tv_title"
+                style="@style/hfb_app_title_style"
+                android:layout_gravity="center_horizontal"
+                android:drawableLeft="@drawable/hfb_succ"
+                android:text="@string/upay_hfb_success"
+                android:textColor="#FF0000" />
+
+            <TextView
+                android:id="@+id/tv_info"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="50dp"
+                android:autoLink="all"
+                android:background="@drawable/hfb_info_bg"
+                android:lineSpacingExtra="12dp"
+                android:padding="15dp"
+                android:text="@string/upay_hfb_thanks"
+                android:textColor="#333333"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btn_return"
+                style="@style/hfb_txt_style"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:background="@drawable/hfb_btn"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                android:text="@string/upay_hfb_return" 
+                android:tag="return_bt"
+                />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

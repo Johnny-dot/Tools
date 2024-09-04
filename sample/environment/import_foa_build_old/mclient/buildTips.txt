@@ -1,0 +1,3 @@
+添加'king.ico'到neededcreate.lua最后
+
+pregroup.lua要和global.lua同步

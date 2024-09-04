@@ -1,0 +1,41 @@
+暂定的IOS打包流程，以后按需修改
+IOS打包流程：
+
+PC端：
+1. 运行chengxu\trunk\XA\res.bat ，
+2. 删除chengxu\trunk\XA\shader.shr 文件
+3. 在code\main.lua中开启 _sys.shaderProfile 之后 在PC上跑各个场景 跑完之后关闭游戏窗口 让引擎自动创建 shader.shr 文件 并复制到目录"XA/client/"中
+4.检查各个调试参数和版本标记：
+main.lua
+    _sys.fpsLimit = 30
+    _G.IS_TRACE = false
+    _G.DRAW_CIRCLE = false
+    _sys.showVersion = false
+    _sys.showStat = false
+    _sys.showMemory = false
+globle.lua
+    _G.MD5_KEY是否变更
+    _G.version_name = 'redgoldtest'（需要修改成相应的版本名称，并修改该分支中的配置参数）
+    _G.server_address_in = "10.1.10.82"
+    _G.server_address_out = "120.132.69.194"
+    _G.server_address_local = "0.0.0.0"
+    _G.server_ip = ""
+    _G.GLOWFACTOR = 0.2
+    _G.MD_KEY是否变更
+5.替换jit版本为luajit201中的版本
+6.检查prebuild/build.lua中的版本号，并用start-foa.bat打foa包
+7.是否需要资源转pvr，需要的话修改prebuild/build_ios_release.lua中的版本号，并用release-ios-pvr-foa.bat打foa包
+8.修改foa.zip为该版本需要的名字并提交到相应的服务器目录。
+
+在提交foa的时候同时确认服务器版本是否匹配。
+
+Mac端：
+1.是否需要更新引擎版本
+2.检查是否已选择需要打包版本的Scheme
+3.检查工程目录中的该版本中需要打包的Res中的内容是否已经勾选或者有多余项
+4.检查iOS Deployment Target 对应的ios版本
+5.检查Targeted Device Family 对应的设备
+6.检查Code Signing 是否选对证书
+7.修改fancy-dev.cfg的内容为相应版本的内容
+8.Project->archive打包 并发布正确的安装包
+
