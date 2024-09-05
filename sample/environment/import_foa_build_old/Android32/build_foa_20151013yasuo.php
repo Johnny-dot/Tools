@@ -75,10 +75,10 @@ _app.use_localserverlist = {$param['use_localserverlist']}
 _app.version = $svn_number
 _app.channel = '{$param['tag']}'
 _app.lang = '{$param['lang']}'
-_app.sandbox = '{$param['sandbox']}'
+_app.sandbox = {$param['sandbox']}
 _app.isAppleStoreReview = {$param['toapple']}
 _app.bigversion = '{$param['bigversion']}'
-_app.istestapp = '{$param['testapp']}'
+_app.istestapp = {$param['testapp']}
 _app.sysversion = '{$param['sysversion']}'
 _app.istoiran = {$param['istoiran']}
 EOT;
