@@ -12,15 +12,10 @@ if %ERRORLEVEL% neq 0 (
     powershell -Command "Set-ExecutionPolicy RemoteSigned -scope CurrentUser"
     powershell -Command "iwr -useb get.scoop.sh | iex"
 
-    :: 手动更新环境变量以便立即识别 scoop 命令
-    echo Refreshing environment variables...
-    setx PATH "%USERPROFILE%\scoop\shims;%PATH%"
-
-    :: 重新加载命令行环境
-    echo Reloading command prompt...
-    start "" /wait cmd /c "%~f0"
+    :: 提示用户重新启动命令行窗口以使 Scoop 生效
+    echo Scoop has been installed. Please close and reopen this command prompt, then rerun this script to complete the installation.
     pause
-    goto :eof
+    exit /b 0
 ) else (
     echo Scoop is already installed.
 )
