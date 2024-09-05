@@ -19,7 +19,8 @@ if %ERRORLEVEL% neq 0 (
     :: 重新加载命令行环境
     echo Reloading command prompt...
     start "" /wait cmd /c "%~f0"
-    exit /b 0
+    pause
+    goto :eof
 ) else (
     echo Scoop is already installed.
 )
