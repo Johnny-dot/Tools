@@ -41,6 +41,8 @@ class FoaBuild:
             buildDict['opt'] = 'RES_CONVERT'
             buildDict['platform'] = self.vo.getVal("platform")
             vo = ToolsMain.inputByDict(buildDict)
+            vo.setFuncOutPath(self.vo.getFuncOutPath())
+            vo.setUniqueKey(self._uniqueKey)
             return vo
 
         snapshopPath = self.vo.getVal('snapshopPath')
