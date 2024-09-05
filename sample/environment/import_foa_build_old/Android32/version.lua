@@ -1,10 +1,10 @@
-time = '08281047'
-version = 54539
+time = '2409041821_25718045'
+version = 54776
 mainPlugin = 'plugin.fob'
 name = 'rghw'
 path = 'temp'
 platform = "android"
-out = 'output/android_and_hwfb_54539_08281047'
+out = 'output/android_hwfb_54776_2409041821_25718045'
 code = 'code/main.lua'
 foaName = 'afoa'
 focName = ''

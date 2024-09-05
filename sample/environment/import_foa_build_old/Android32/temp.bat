@@ -1,2 +1,2 @@
-cd sample/environment/Android32
-php build_foa_20151013.php platform=android bigversion=v1 isdebug=false tag=and_hwfb use_sdk=true use_localserverlist=false lang=en path=E:/kuangbao/devA/XA sysversion=8.1.3 is64=false
+cd sample/environment/import_foa_build_old/Android32
+php build_foa_20151013.php platform=android bigversion=v1 isdebug=false tag=hwfb use_sdk=true use_localserverlist=false lang=en path=E:/kuangbao/Test sysversion=8.1.3 is64=false svnnumber=54776 nowtime=2409041821_25718045 

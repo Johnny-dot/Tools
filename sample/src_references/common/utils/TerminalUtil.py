@@ -50,7 +50,7 @@ def check_code_syntax(code_path):
     for root, dirs, files in os.walk(code_path):
         for file in files:
             if file.endswith('.lua'):
-                file_path = os.path.join(root, file)
+                file_path = os.path.normpath(os.path.join(root, file))
                 is_valid, error_message = check_lua_syntax(file_path)
                 if not is_valid:
                     non_compliant_files.append((file_path, error_message))

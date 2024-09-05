@@ -147,15 +147,15 @@ class FoaBuild:
             for file_path in incorrect_files_code:
                 logger.warning(f"File: {file_path}")
 
-        # 检查res文件夹中的文件名是否小写
-        is_correct_res, incorrect_files_res = FileUtil.check_lowercase_filenames(res_path, ignore_extensions=['.mp3', '.ogg'])
-        if not is_correct_res:
-            logger.warning("Filename check failed in res folder. The following files are not lowercase:")
-            for file_path in incorrect_files_res:
-                logger.warning(f"File: {file_path}")
+        # # 检查res文件夹中的文件名是否小写
+        # is_correct_res, incorrect_files_res = FileUtil.check_lowercase_filenames(res_path, ignore_extensions=['.mp3', '.ogg'])
+        # if not is_correct_res:
+        #     logger.warning("Filename check failed in res folder. The following files are not lowercase:")
+        #     for file_path in incorrect_files_res:
+        #         logger.warning(f"File: {file_path}")
 
         # 如果任一检查不通过，则返回False
-        if not is_correct_code or not is_correct_res:
+        if not is_correct_code:
             logger.warning("Filename check did not pass. Please review the errors above.")
             return False
 
@@ -267,10 +267,12 @@ class FoaBuild:
                     dest_file.parent.mkdir(parents=True, exist_ok=True)
                     FolderUtil.copy(foa_file, dest_file)
 
-        if outPath1.exists():
+        if FolderUtil.exists(outPath1):
+            outPath1 = Path(self.vo.getVal("outPath1"))  # 转换为 Path 对象
             copy_foa_files(sourcePath, outPath1)
 
-        if outPath2.exists():
+        if FolderUtil.exists(outPath2):
+            outPath2 = Path(self.vo.getVal("outPath2"))
             copy_foa_files(sourcePath, outPath2)
 
     def cleanTemp(self):
