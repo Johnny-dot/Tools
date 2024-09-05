@@ -179,7 +179,7 @@ class FoaBuild:
                 f"cd {self.workPath}\n"
                 f"php {php} toapple={self.vo.getVal_Lua('isAppleStoreReview')} istoiran={self.vo.getVal_Lua('istoiran')} "
                 f"platform={self.vo.getVal_Lua('platform')} bigversion={self.vo.getVal_Lua('bigversion')} sandbox={self.vo.getVal_Lua('sandbox')} "
-                f"isdebug={self.vo.getVal_Lua('isdebug')} tag={self.vo.getVal_Lua('tag')} istestapp={self.vo.getVal_Lua('istestapp')} "
+                f"isdebug={self.vo.getVal_Lua('isdebug')} tag={self.vo.getVal_Lua('tag')} testapp={self.vo.getVal_Lua('istestapp')} "
                 f"use_sdk={self.vo.getVal_Lua('use_sdk')} use_localserverlist={self.vo.getVal_Lua('use_localserverlist')} "
                 f"lang={self.vo.getVal_Lua('lang')} path={self.XAUrl} sysversion={self.vo.getVal_Lua('sysversion')} "
                 f"is64={self.vo.getVal_Lua('is64')} svnnumber={self.svnNumber} nowtime={self._uniqueKey.split('-')[1]} "
