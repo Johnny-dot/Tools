@@ -177,7 +177,7 @@ class FoaBuild:
         elif str(self.vo.getVal_Lua("is64")) in ['false', 'true']:
             version_code = (
                 f"cd {self.workPath}\n"
-                f"php {php} "
+                f"php {php} toapple={self.vo.getVal_Lua('isAppleStoreReview')} istoiran={self.vo.getVal_Lua('istoiran')} "
                 f"platform={self.vo.getVal_Lua('platform')} bigversion={self.vo.getVal_Lua('bigversion')} "
                 f"isdebug={self.vo.getVal_Lua('isdebug')} tag={self.vo.getVal_Lua('tag')} "
                 f"use_sdk={self.vo.getVal_Lua('use_sdk')} use_localserverlist={self.vo.getVal_Lua('use_localserverlist')} "
