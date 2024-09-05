@@ -11,36 +11,35 @@ if %ERRORLEVEL% neq 0 (
     echo Scoop is not installed. Installing Scoop...
     powershell -Command "Set-ExecutionPolicy RemoteSigned -scope CurrentUser"
     powershell -Command "iwr -useb get.scoop.sh | iex"
-    
-    :: 设置 Scoop 的路径
-    set "SCOOP_PATH=%USERPROFILE%\scoop\shims"
 
-    :: 手动添加 Scoop 路径，安装完成后需要用户重新运行脚本
-    echo Scoop has been installed. Please close and reopen this command prompt, then run this script again to complete the Lua installation.
-    pause
-    exit /b 0
+    :: 手动设置 Scoop 路径，避免依赖环境变量的延迟更新
+    set "SCOOP_PATH=%USERPROFILE%\scoop\shims"
+    if not exist "%SCOOP_PATH%\scoop.ps1" (
+        echo Scoop installation failed. Please check and try again.
+        pause
+        exit /b 1
+    )
+    
+    :: Scoop 安装完成，继续执行后续步骤
+    echo Scoop installed successfully.
 ) else (
     echo Scoop is already installed.
+    set "SCOOP_PATH=%USERPROFILE%\scoop\shims"
 )
 
-:: 确保 Scoop 路径可用
-set "SCOOP_PATH=%USERPROFILE%\scoop\shims"
-if not exist "%SCOOP_PATH%\scoop.exe" (
-    echo Scoop path not found. Please ensure that Scoop is installed correctly.
-    pause
-    exit /b 1
-)
+:: 调试：检查 Scoop 路径
+echo SCOOP_PATH is set to: %SCOOP_PATH%
 
-:: 更新 Scoop
+:: 更新 Scoop，手动指定路径来执行 scoop.ps1
 echo Updating Scoop...
-"%SCOOP_PATH%\scoop.exe" update
+powershell -ExecutionPolicy RemoteSigned -File "%SCOOP_PATH%\scoop.ps1" update
 
-:: 检查是否已安装 Lua
+:: 检查是否已安装 Lua，手动指定路径来执行 scoop.ps1
 echo Checking if Lua is installed...
 where luac >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo Lua is not installed. Installing Lua with Scoop...
-    "%SCOOP_PATH%\scoop.exe" install lua
+    powershell -ExecutionPolicy RemoteSigned -File "%SCOOP_PATH%\scoop.ps1" install lua
 ) else (
     echo Lua is already installed.
 )
