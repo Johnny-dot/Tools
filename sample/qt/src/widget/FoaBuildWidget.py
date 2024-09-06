@@ -103,7 +103,7 @@ class FoaBuildWidget(QWidget):
         snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
         bindingInfo = snapshotBinding.get(branch) or {}
         bindingInfo['check'] = self.ui.radioButton_snapshot.isChecked()
-        bindingInfo['cfgPath_%s'%platform] = self.ui.lineEdit_snapshot.displayText()
+        bindingInfo['snapshot_%s'%platform] = self.ui.lineEdit_snapshot.displayText()
         bindingInfo['foa_outpath1'] = self.ui.lineEdit_outPath1.displayText()
         bindingInfo['foa_outpath2'] = self.ui.lineEdit_outPath2.displayText()
         snapshotBinding[branch] = bindingInfo
@@ -113,6 +113,7 @@ class FoaBuildWidget(QWidget):
         self.syncSnapshotCfg()
         isChecked = self.ui.radioButton_snapshot.isChecked()
         if not isChecked:
+            self._snapshopPath = self.ui.lineEdit_snapshot.displayText()
             self.ui.lineEdit_snapshot.clear()
         else:
             branch = self.ui.comboBox_allBranches.currentText()
@@ -120,9 +121,7 @@ class FoaBuildWidget(QWidget):
             bindingInfo = snapshotBinding.get(branch)
             if bindingInfo:
                 platform = self.ui.comboBox_platform.currentText()
-                self.ui.lineEdit_snapshot.setText(bindingInfo.get('cfgPath_%s'%platform))
-            else:
-                self.ui.lineEdit_snapshot.setText('')
+                self.ui.lineEdit_snapshot.setText(self._snapshopPath or bindingInfo.get('snapshot_%s'%platform))
             
 
 
@@ -176,7 +175,7 @@ class FoaBuildWidget(QWidget):
         bindingInfo = snapshotBinding.get(branch)
         if bindingInfo:
             self.ui.radioButton_snapshot.setChecked(bindingInfo.get('check'))
-            self.ui.lineEdit_snapshot.setText(bindingInfo.get('cfgPath_%s'%platform))
+            self.ui.lineEdit_snapshot.setText(bindingInfo.get('snapshot_%s'%platform))
 
             self.ui.lineEdit_outPath1.setText(bindingInfo.get('foa_outpath1'))
             self.ui.lineEdit_outPath2.setText(bindingInfo.get('foa_outpath2'))
@@ -296,6 +295,24 @@ class FoaBuildWidget(QWidget):
     def getVO(self):
         return self.paraVo
 
+    def addSysversion(self, sysversion):
+        if sysversion:
+            # 将 sysversion 拆分为主版本号和子版本号（假设版本号为 x.y.z 的格式）
+            version_parts = sysversion.split('.')
+            if len(version_parts) == 3:
+                # 将最后一个数字递增
+                version_parts[2] = str(int(version_parts[2]) + 1)
+                # 重新拼接成新的版本号
+                new_sysversion = '.'.join(version_parts)
+                # 设置新的版本号到 UI 中
+                self.ui.lineEdit_sysversion.setText(new_sysversion)
+                G.getG('LogMgr').getLogger(self._uniqueKey).info("自动递增版本号成功,new_sysversion:%s" % new_sysversion)
+                self.onClickQuicParasSync()
+            else:
+                print("sysversion 格式不正确")
+        else:
+            print("未找到系统版本信息")
+
     def onClickBuild(self):
         paraDict = self.getBuildDict()
         G.getG('LogMgr').getLogger(self._uniqueKey).info('开始获取build参数')
@@ -319,8 +336,10 @@ class FoaBuildWidget(QWidget):
             G.getG('LogMgr').getLogger(self._uniqueKey).warning('文件快照不存在,此次构建取消自动化转资源:%s' % snapshopPath)
 
 
-        foaErrors = ToolsMain.main(self.paraVo)
-        if not foaErrors:
+        foaErrors, successed = ToolsMain.main(self.paraVo)
+        if not foaErrors and successed:
+            self.addSysversion(self.paraVo.getVal('sysversion'))
+            self.syncSnapshotCfg()
             G.getG('LogMgr').getLogger(self._uniqueKey).info("构建成功")
             QMessageBox.information(self, "构建成功", "构建成功")
 

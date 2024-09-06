@@ -23,17 +23,7 @@ local function split(s, delimiter)
     return t
 end
 
-local dods = {'msh$', 'skn$', 'man$', 'san$', 'tga$', 'bmp$', 'jpg$', 'dds$', 'png$', 'mp3$', 'wav$', 'pfx$', 'walk$', 'sen$', 'skl$', 'mov$'}
-local ndods = {'lua$', '.lst$', 'cog$', '%.cur$', '%.ico$', '%.flt$', '%.swf$'}
-local ignores = {'%.exe$', '%.fob$', '%.db$', 'cfg$', 'inf$', 'thumbs.db$', '%.log$', '.fla$', 'info$'}
-local not_optimizeRes = {'yinghuaban.tga','yinghuaban_02.tga'}
-
 local function optimizeRes(f)
-    for i, v in ipairs(not_optimizeRes) do
-        if v == f then
-            return
-        end
-    end
     f = path .. '/res/'..f
     if f:find('%.san$') then
         -- _mf:optimizeSkeletonAnimation(f) -- 优化动画资源, 对特殊动画进行过滤，不优化
@@ -79,6 +69,9 @@ local function infoformat(f, path)
     return 0
 end
 
+local dods = {'msh$', 'skn$', 'man$', 'san$', 'tga$', 'bmp$', 'jpg$', 'dds$', 'png$', 'mp3$', 'wav$', 'pfx$', 'walk$', 'sen$', 'skl$','mov$'}
+local ndods = {'lua$', '.lst$', 'cog$', '%.cur$', '%.ico$', '%.flt$', '%.swf$'}
+local ignores = {'%.exe$', '%.fob$', '%.db$', 'cfg$', 'inf$', 'thumbs.db$', '%.log$', '.fla$', 'info$'}
 local function packinfo(f, path)
     local dod, fmt, pack
     local n = _sys:getFileName(f, true, false)
@@ -96,6 +89,7 @@ local function packinfo(f, path)
     return fmt, dod, pack
 end
 
+local is64 = _sys:getGlobal("is64") == "true"
 local createArchive = function()
     local archive = _Archive.new()
     archive.appTitle = name
@@ -150,10 +144,10 @@ function onEnumFile(filename)
 
         -- add lua64
 
-		-- if fmt == _Archive.TypeScript and isAndroid then
-		-- 	local logicname = f:sub( 1, -5 ) .. '.lua64'
-		-- 	archive:addFile( f, gname, _Archive.TypeScript2, logicname )
-		-- end
+		if fmt == _Archive.TypeScript and isAndroid then
+			local logicname = f:sub( 1, -5 ) .. '.lua64'
+			archive:addFile( f, gname, _Archive.TypeScript2, logicname )
+		end
 
         archive:addFile( f, gname, fmt, f )
     end

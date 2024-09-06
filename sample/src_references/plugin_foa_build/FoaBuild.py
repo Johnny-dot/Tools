@@ -97,13 +97,19 @@ class FoaBuild:
             # 3.更新快照文件
             logger.info('更新资源同步完成,准备更新文件快照')
             snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
-            bindingInfo = snapshotBinding.get(self.vo.getVal("branches"))
+            branches = self.vo.getVal("branches")
+            bindingInfo = snapshotBinding.get(branches)
             if bindingInfo:
                 targetResPath = self.XAUrl + '/res'
                 filesDict = FolderUtil.getFilesInfo(targetResPath)
                 fileMd5Map = Md5Util.fileTreeSnapshot(filesDict)
-                snapshotCfgPath = bindingInfo.get('cfgPath_%s' % self.platform)
-                JsonUtil.writeDict(fileMd5Map, snapshotCfgPath)
+                snapshotCfgPath = bindingInfo.get('snapshot_%s' % self.platform)
+                newSnapshotCfgPath = snapshotCfgPath + '_%s' % time.strftime('%Y%m%d%H%M%S')
+                JsonUtil.writeDict(fileMd5Map, newSnapshotCfgPath)
+                bindingInfo['snapshot_%s' % self.platform] = newSnapshotCfgPath
+                snapshotBinding[branches] = bindingInfo
+                JsonUtil.saveInCfg('snapshot_binding', snapshotBinding)
+                logger.info('文件快照更新完成')
 
     def initWorkEnv(self):
         # 获取工作环境
@@ -116,17 +122,53 @@ class FoaBuild:
             self.workPath = cfg.get("environment").get('Android64')
         else:
             self.workPath = cfg.get("environment").get('build')
+
         # 确定分支
         branches = self.vo.getVal_Lua("branches")
         self.XAUrl = self.kbMgr.getBranchUrl(branches)
+        result = SvnUtil.updateSvn(self.XAUrl)
+        G.getG('LogMgr').getLogger(self._uniqueKey).info(f"更新分支 {branches} 结果: {result}")
+
         # 分支最新版本
         repoUrl = ALL_BRANCHES_REPO.get(branches)
         self.svnNumber = SvnUtil.getSvnInfo("revision", repoUrl)
+
         # 出包平台
         self.platform = self.vo.getVal_Lua("platform")
         self.platformRes = self.XAUrl + '/' + self.vo.getVal_Lua("res_target")
+
         # foa tag
         self.tag = self.vo.getVal_Lua("tag")
+
+        # 将所选分支的 code/pack_simulate/nodod.lua 和 pack2.lua 复制到工作目录
+        code_path = os.path.join(self.XAUrl, 'code')
+        target_files = ['nodod.lua', 'pack2.lua']
+
+        for file_name in target_files:
+            source_file = os.path.join(code_path, 'pack_simulate', file_name)
+            destination_file = os.path.join(self.workPath, file_name)
+
+            if FolderUtil.exists(source_file):
+                # 如果目标文件已经存在，检测差异
+                if FolderUtil.exists(destination_file):
+                    diff, error = FileUtil.compare_file_contents(destination_file, source_file)
+                    if diff:
+                        print(f"当前文件名: {file_name}")  # 调试代码，检查 file_name 的值
+                        if file_name == 'nodod.lua':
+                            G.getG('LogMgr').getLogger(self._uniqueKey).info("检测到首包变更，此次变更的内容为：")
+                        elif file_name == 'pack2.lua':
+                            G.getG('LogMgr').getLogger(self._uniqueKey).info("检测到二包变更，此次变更的内容为：")
+
+                        for line in diff:
+                            G.getG('LogMgr').getLogger(self._uniqueKey).info(line.strip())
+                    else:
+                        G.getG('LogMgr').getLogger(self._uniqueKey).info("首包和二包的配置文件无变更")
+
+                # 复制文件
+                FolderUtil.copy(source_file, destination_file)
+                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"复制文件 {file_name} 到工作目录 {self.workPath}")
+            else:
+                G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"文件 {file_name} 不存在于路径 {source_file}")
 
     def checkCode(self):
         code_path = os.path.join(self.XAUrl, 'code')
@@ -253,7 +295,6 @@ class FoaBuild:
         finalOutPath = os.path.join(self.vo.getFuncOutPath(), f"{self.platform}_{self.tag}_{self.svnNumber}_{nowdate}")
         FolderUtil.copy(inPath, finalOutPath)
         FolderUtil.delete(inPath)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('FOA构建成功')
 
     def dealExtraOutPut(self):
         outPath1 = self.vo.getVal("outPath1")
@@ -338,4 +379,4 @@ class FoaBuild:
         self.kbMgr.onProgressUpdated(self._uniqueKey, 7)
         G.getG('LogMgr').getLogger(self._uniqueKey).info("清理临时文件完成")
 
-        return foaErrors
+        return foaErrors, True

@@ -1,2 +1,2 @@
 cd sample/environment/import_foa_build_old/Android64
-php build_foa_20151013.php platform=android bigversion=v1 isdebug=false tag=and_hwzs64 use_sdk=true use_localserverlist=false lang=en path=E:/kuangbao/devA/XA sysversion=8.1.3 is64=true
+php build_foa_20151013.php toapple=false istoiran=false platform=android bigversion=v1 sandbox=false isdebug=false tag=hwzs64 testapp=false use_sdk=true use_localserverlist=true lang=en path=E:/kuangbao/tagA/XA sysversion=8.1.6 is64=true svnnumber=54802 nowtime=2409061614_18868689 
