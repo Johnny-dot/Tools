@@ -44,6 +44,16 @@ if %ERRORLEVEL% neq 0 (
     echo Lua is already installed.
 )
 
+:: 检查是否已安装 SVN，手动指定路径来执行 scoop.ps1
+echo Checking if SVN is installed...
+where svn >nul 2>nul
+if %ERRORLEVEL% neq 0 (
+    echo SVN is not installed. Installing SVN with Scoop...
+    powershell -ExecutionPolicy RemoteSigned -File "%SCOOP_PATH%\scoop.ps1" install svn
+) else (
+    echo SVN is already installed.
+)
+
 :: 完成
 echo Installation complete.
 pause
