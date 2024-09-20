@@ -375,8 +375,8 @@ class FoaBuild:
         G.getG('LogMgr').getLogger(self._uniqueKey).info("转移FOA至outpath完成")
 
         # 构建完成
-        self.cleanTemp()
+        # self.cleanTemp()
         self.kbMgr.onProgressUpdated(self._uniqueKey, 7)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("清理临时文件完成")
+        # G.getG('LogMgr').getLogger(self._uniqueKey).info("清理临时文件完成")
 
         return foaErrors, True
