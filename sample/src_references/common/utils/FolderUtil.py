@@ -3,9 +3,13 @@ import os
 import errno
 import stat
 import time
+import datetime
 
 def exists(url):
     return os.path.exists(url)
+
+def join(url, *args):
+    return os.path.join(url, *args)
 
 # 新建
 def create(url):
@@ -67,7 +71,6 @@ def copy(sUrl, tUrl, progressCb=None):
     else:
         _copy_progress(sUrl, tUrl)
 
-
 # 获取某个路径下所有的文件信息
 def getFilesInfo(rootDir):
     filesDict = {}
@@ -86,3 +89,13 @@ def getUrlInfo(url):
 
 def isDir(url):
     return os.path.isdir(url)
+
+# 获取文件的上次修改时间
+def getLastModifiedTime(url):
+    if exists(url):
+        # 获取上次修改时间并格式化为可读形式
+        timestamp = os.path.getmtime(url)
+        last_modified_time = datetime.fromtimestamp(timestamp)
+        return last_modified_time.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        return None

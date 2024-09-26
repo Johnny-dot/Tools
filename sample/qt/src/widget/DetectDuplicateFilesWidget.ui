@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="pushButton_build">
    <property name="geometry">
     <rect>
-     <x>730</x>
+     <x>780</x>
      <y>20</y>
      <width>100</width>
      <height>50</height>
@@ -147,7 +147,7 @@ QPushButton:pressed {
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>431</width>
+     <width>331</width>
      <height>51</height>
     </rect>
    </property>
@@ -173,7 +173,7 @@ QPushButton:pressed {
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>371</width>
+      <width>281</width>
       <height>21</height>
      </rect>
     </property>
@@ -184,7 +184,7 @@ QPushButton:pressed {
    <widget class="QToolButton" name="toolButton_inPath">
     <property name="geometry">
      <rect>
-      <x>390</x>
+      <x>300</x>
       <y>20</y>
       <width>24</width>
       <height>21</height>
@@ -192,6 +192,32 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>...</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>10</y>
+     <width>391</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>正则匹配</string>
+   </property>
+   <widget class="QLineEdit" name="lineEdit_match">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>361</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>指定匹配规则，例如*.ts</string>
     </property>
    </widget>
   </widget>

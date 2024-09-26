@@ -140,7 +140,8 @@ class DetectDuplicateFilesWidget(QWidget):
         buildDict = {
             'opt': opt,
             'inputUrl': self.ui.lineEdit_inPath.displayText(),
-            'pendingResources': self._pendingResources  # 传递待处理资源
+            'pendingResources': self._pendingResources,
+            'match_text': self.ui.lineEdit_match.displayText(),
         }
         return buildDict
 
@@ -157,6 +158,14 @@ class DetectDuplicateFilesWidget(QWidget):
         else:
             return f"{size_bytes / 1024 ** 3:.2f} GB"
 
+    def getFuncOutPath(self):
+        FOA_BUILD_PATH = 'sample/output/'
+        arr = self.getUniqueKey().split('-', 1)
+        workDir = '%s/%s/%s/' % (FOA_BUILD_PATH, arr[0], arr[1])
+        if not FolderUtil.exists(workDir):
+            FolderUtil.create(workDir)
+        return workDir
+
     def onClickBuild(self):
         if not self._inPath:
             QMessageBox.warning(self, "路径未设置", "请先设置路径后再进行检测。")
@@ -167,6 +176,7 @@ class DetectDuplicateFilesWidget(QWidget):
         buildDict = self.getBuildDict()
         self.paraVo = ToolsMain.inputByDict(buildDict)
         self.paraVo.setUniqueKey(self.getUniqueKey())
+        self.paraVo.setFuncOutPath(self.getFuncOutPath())
         duplicates, duplicate_groups, total_size = ToolsMain.main(self.paraVo)  # 获取重复文件及统计信息
 
         self.ui.listWidget_pending.clear()

@@ -28,6 +28,8 @@ FOA_BUILD_VO = {
         'inputUrl':"",
         'outputUrl':"",
         'outputUrlExtra':"",
+        # 文件去重
+        'match_text':"",
     }
 # iter(
 # )

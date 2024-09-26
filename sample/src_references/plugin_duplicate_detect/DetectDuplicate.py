@@ -1,11 +1,18 @@
 import os
 import hashlib
+import time
+import json
+import re
+
+from sample.src_references.common.utils import FileUtil, FolderUtil
+
 
 class DetectDuplicate:
     def __init__(self, paraVo):
         self.paraVo = paraVo
         self._inPath = paraVo.getVal('inputUrl')
         self._pendingResources = {}  # {file_size: {md5: [file_paths]}}
+        self._match_pattern = paraVo.getVal('match_text')  # 获取匹配词
 
     def get_file_md5(self, file_path, block_size=65536):
         md5 = hashlib.md5()
@@ -18,6 +25,27 @@ class DetectDuplicate:
             return None
         return md5.hexdigest()
 
+    def convert_size(self, size_bytes):
+        """
+        将字节转换为MB或GB的单位，按照Windows文件管理系统的显示规则。
+        """
+        if size_bytes < 1024:
+            return f"{size_bytes} Bytes"
+        elif size_bytes < 1024 ** 2:
+            return f"{size_bytes / 1024:.2f} KB"
+        elif size_bytes < 1024 ** 3:
+            return f"{size_bytes / 1024 ** 2:.2f} MB"
+        else:
+            return f"{size_bytes / 1024 ** 3:.2f} GB"
+
+    def file_matches_pattern(self, file_path):
+        """
+        检查文件路径是否与匹配词的正则表达式匹配。
+        """
+        if not self._match_pattern:
+            return True  # 如果没有设定匹配词，则不过滤，所有文件都匹配
+        return re.search(self._match_pattern, file_path) is not None
+
     def find_duplicates(self):
         self._pendingResources.clear()
         total_size = 0
@@ -26,6 +54,11 @@ class DetectDuplicate:
         for root, dirs, files in os.walk(self._inPath):
             for file in files:
                 file_path = os.path.join(root, file)
+
+                # 检查文件是否符合正则匹配词
+                if not self.file_matches_pattern(file_path):
+                    continue
+
                 try:
                     file_size = os.path.getsize(file_path)
                 except OSError as e:
@@ -36,7 +69,6 @@ class DetectDuplicate:
                 if file_md5 is None:
                     continue
 
-                # Initialize the file size key if it doesn't exist
                 if file_size not in self._pendingResources:
                     self._pendingResources[file_size] = {}
 
@@ -51,10 +83,32 @@ class DetectDuplicate:
                 if len(paths) > 1:
                     total_size += file_size * len(paths)
                     duplicate_groups += 1
-                    duplicates[md5] = {'paths': paths, 'size': file_size}
+                    duplicates[md5] = {
+                        'paths': paths,
+                        'size': file_size,
+                        'formatted_size': self.convert_size(file_size)
+                    }
 
         return duplicates, duplicate_groups, total_size
 
     def main(self):
         # 主入口，返回检测到的重复文件及统计信息
-        return self.find_duplicates()
+        duplicates, duplicate_groups, total_size = self.find_duplicates()
+
+        # 获取输出路径
+        output_path = self.paraVo.getFuncOutPath()
+
+        # 使用当前时间戳生成唯一文件名
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        output_file = FolderUtil.join(output_path, f"duplicates_{timestamp}.json")
+
+        # 将重复文件信息持久化为 JSON 格式
+        try:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(duplicates, f, ensure_ascii=False, indent=4)
+        except IOError as error:
+            print(f"写文件时发生错误! {error}")
+
+        # 输出日志或提示
+        print(f"检测到 {duplicate_groups} 组重复文件，总大小为 {total_size} 字节。")
+        return duplicates, duplicate_groups, total_size
