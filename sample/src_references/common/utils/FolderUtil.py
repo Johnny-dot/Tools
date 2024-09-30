@@ -3,7 +3,7 @@ import os
 import errno
 import stat
 import time
-import datetime
+from datetime import datetime
 
 def exists(url):
     return os.path.exists(url)

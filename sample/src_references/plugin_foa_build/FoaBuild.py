@@ -45,14 +45,14 @@ class FoaBuild:
             vo.setUniqueKey(self._uniqueKey)
             return vo
 
-        snapshopPath = self.vo.getVal('snapshopPath')
-        if FolderUtil.exists(snapshopPath):
+        snapshotPath = self.vo.getVal('snapshotPath')
+        if FolderUtil.exists(snapshotPath):
             logger = G.getG('LogMgr').getLogger(self._uniqueKey)
             logger.info('已勾选自动转资源,开始自动流程')
             logger.info('快照文件有效,正在对比差异文件')
 
             # 1.与快照配置比对出差异文件
-            comparedDict = JsonUtil.readDict(snapshopPath)
+            comparedDict = JsonUtil.readDict(snapshotPath)
             targetResPath = self.XAUrl + '/res'
             targetDict = Md5Util.fileTreeSnapshot(FolderUtil.getFilesInfo(targetResPath))
 
@@ -103,13 +103,16 @@ class FoaBuild:
                 targetResPath = self.XAUrl + '/res'
                 filesDict = FolderUtil.getFilesInfo(targetResPath)
                 fileMd5Map = Md5Util.fileTreeSnapshot(filesDict)
-                snapshotCfgPath = bindingInfo.get('snapshot_%s' % self.platform)
-                newSnapshotCfgPath = snapshotCfgPath + '_%s' % time.strftime('%Y%m%d%H%M%S')
+                snapshot_environment = JsonUtil.readInCfg('environment').get('snapshot')
+                branch_platform = f'{branches}_{self.platform}'
+                snapshot_cfg_path = FolderUtil.join(snapshot_environment, branch_platform)
+                newSnapshotCfgPath = f"{snapshot_cfg_path}/snapshot_{time.strftime('%Y%m%d%H%M%S')}.json"
+
                 JsonUtil.writeDict(fileMd5Map, newSnapshotCfgPath)
                 bindingInfo['snapshot_%s' % self.platform] = newSnapshotCfgPath
                 snapshotBinding[branches] = bindingInfo
                 JsonUtil.saveInCfg('snapshot_binding', snapshotBinding)
-                logger.info('文件快照更新完成')
+                logger.info(f'文件快照更新完成,新快照文件为:{newSnapshotCfgPath}')
 
     def initWorkEnv(self):
         # 获取工作环境

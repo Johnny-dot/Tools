@@ -6,7 +6,7 @@ from sample.qt.src.widget.ui_DetectDuplicateFilesWidget import Ui_DetectDuplicat
 import sample.src_references.common.g.G as G
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.Main as ToolsMain  # 导入Main模块
-from sample.src_references.common.utils import FolderUtil
+from sample.src_references.common.utils import FolderUtil, TerminalUtil
 
 
 class DetectDuplicateFilesWidget(QWidget):
@@ -97,7 +97,9 @@ class DetectDuplicateFilesWidget(QWidget):
             current_item = self.ui.listWidget_processed.currentItem()
             if current_item:
                 file_path = current_item.data(Qt.UserRole)
-                self.open_in_explorer(file_path)
+                success, message = TerminalUtil.openInExplorer(file_path)
+                if not success:
+                    QMessageBox.warning(self, "打开文件", message)
 
     def deleteFile(self, file_path):
         try:
@@ -198,14 +200,3 @@ class DetectDuplicateFilesWidget(QWidget):
         if self._callback:
             self._callback(self.getUniqueKey())
 
-    def open_in_explorer(self, file_path):
-        """
-        使用 Windows 资源管理器打开并选中指定的文件。
-        """
-        # 需要将路径中的特殊字符进行转义，以确保路径正确
-        file_path = os.path.abspath(file_path).replace('/', '\\')
-        try:
-            # 使用 explorer 命令打开文件资源管理器并选中指定文件
-            subprocess.Popen(f'explorer /select,"{file_path}"', shell=True)
-        except Exception as e:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error(f"无法打开文件资源管理器: {str(e)}")

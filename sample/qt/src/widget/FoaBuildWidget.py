@@ -1,13 +1,9 @@
-# This Python file uses the following encoding: utf-8
+from PySide6.QtWidgets import QWidget, QMessageBox, QComboBox, QListView, QMenu
+from PySide6.QtGui import QCursor, QAction
+from PySide6.QtCore import Qt
 
-from PySide6.QtWidgets import QWidget, QMessageBox
-
-# Important:
-# You need to run the following command to generate the ui_mainwindow.py file
-#     pyside6-uic form.ui -o ui_mainwindow.py, or
-#     pyside2-uic form.ui -o ui_mainwindow.py
+from sample.qt.src.pyui.BatchBuildDialog import BatchBuildDialog
 from sample.qt.src.widget.ui_FoaBuildWidget import Ui_FoaBuildWidget
-
 from sample.qt.src.widget.QuicParasAddTips import QuicParasAddTips
 
 import sample.src_references.common.g.G as G
@@ -16,10 +12,17 @@ import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 import sample.src_references.common.utils.StringUtil as StringUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
+import sample.src_references.common.utils.TerminalUtil as TerminalUtil
 import sample.src_references.common.vos.FoaBuildVO as KB_VO
+from sample.src_references.common.utils import Md5Util
+
+import os
+
+# 从导入的模块中获取常量
 FOA_BUILD_VO = KB_VO.FOA_BUILD_VO
 ALL_PLATFORM_LANG = KB_VO.ALL_PLATFORM_LANG
 ALL_BRANCHES_REPO = KB_VO.ALL_BRANCHES_REPO
+
 
 class FoaBuildWidget(QWidget):
     def __init__(self, uniqueKey, callback):
@@ -29,319 +32,514 @@ class FoaBuildWidget(QWidget):
         self.ui.setupUi(self)
         self.initFoaPage()
         self._uniqueKey = uniqueKey
-        self._snapshopPath = None
+        self._snapshotPath = None
         self._outPath1 = None
         self._outPath2 = None
         self.paraVo = None
+        self.batchBuildDialog = None  # 初始化批量构建对话框
         G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
 
     def getUniqueKey(self):
         return self._uniqueKey
-        
+
     def initFoaPage(self):
-        self.ui.pushButton_build.clicked[bool].connect(self.onClickBuild)
-        self.ui.toolButton_pathSet.clicked[bool].connect(self.onClickPathSet)
+        """初始化UI组件并连接信号与槽。"""
+        # 连接信号与槽
+        self.ui.pushButton_build.clicked.connect(self.onClickBuild)
+        self.ui.toolButton_pathSet.clicked.connect(self.onClickPathSet)
         self.ui.lineEdit_pathSet.textChanged.connect(self.onPathSet)
-        self.ui.toolButton_quicParasAdd.clicked[bool].connect(self.onClickQuicParasAdd)
-        self.ui.toolButton_quicParasSync.clicked[bool].connect(self.onClickQuicParasSync)
-        self.ui.toolButton_quicParasDel.clicked[bool].connect(self.onClickQuicParasDel)
+        self.ui.toolButton_quicParasAdd.clicked.connect(self.onClickQuicParasAdd)
+        self.ui.toolButton_quicParasSync.clicked.connect(self.onClickQuicParasSync)
+        self.ui.toolButton_quicParasDel.clicked.connect(self.onClickQuicParasDel)
         self.ui.comboBox_allBranches.currentTextChanged.connect(self.onComboBoxChanged)
         self.ui.comboBox_platform.currentTextChanged.connect(self.onComboBoxChanged)
         self.ui.comboBox_quicParas.currentTextChanged.connect(self.onParasBoxChanged)
 
-        self.ui.lineEdit_snapshot.textChanged.connect(self.onSnapshotPathChanged)
+        # 初始化 comboBox_snapshot
+        self.ui.comboBox_snapshot.clear()
+        self.ui.comboBox_snapshot.setView(QListView())  # 设置自定义视图以支持右键菜单
+        self.ui.comboBox_snapshot.view().setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.comboBox_snapshot.view().customContextMenuRequested.connect(self.onSnapshotItemRightClicked)
+        self.ui.comboBox_snapshot.currentTextChanged.connect(self.onSnapshotPathChanged)
         self.ui.comboBox_allBranches.addItems(ALL_BRANCHES_REPO.keys())
-        self.ui.toolButton_snapshotSet.clicked[bool].connect(self.onClickSnapshotSet)
-        self.ui.radioButton_snapshot.clicked[bool].connect(self.onClickSwitchSnapshot)
+        self.ui.toolButton_snapshotSet.clicked.connect(self.onClickSnapshotSet)
+        self.ui.radioButton_snapshot.clicked.connect(self.onClickSwitchSnapshot)
 
-        self.ui.lineEdit_outPath1.textChanged.connect(self.onOutPath1Changed)
-        self.ui.lineEdit_outPath2.textChanged.connect(self.onOutPath2Changed)
-        self.ui.toolButton_outPath1.clicked[bool].connect(self.onClickOutPath1)
-        self.ui.toolButton_outPath2.clicked[bool].connect(self.onClickOutPath2)
+        # 设置comboBox_snapshot的文本对齐方式为右对齐
+        self.ui.comboBox_snapshot.setEditable(True)
+        self.ui.comboBox_snapshot.lineEdit().setReadOnly(True)
+        self.ui.comboBox_snapshot.lineEdit().setAlignment(Qt.AlignRight)
+
+        # 处理输出路径的变化
+        self.ui.lineEdit_outPath1.textChanged.connect(self.onOutPathChanged)
+        self.ui.lineEdit_outPath2.textChanged.connect(self.onOutPathChanged)
+        self.ui.toolButton_outPath1.clicked.connect(self.onClickOutPath)
+        self.ui.toolButton_outPath2.clicked.connect(self.onClickOutPath)
+
+        # 连接批量构建的信号
+        self.ui.radioButton_batchBuild.toggled.connect(self.onBatchBuildToggled)
+        self.ui.radioButton_batchBuild.setAutoExclusive(False)
 
         self.setBuildDefault()
         self.refreshQuicParasComboBox()
 
-    def onOutPath1Changed(self):
-        if self.ui.lineEdit_outPath1.displayText() == "":
-            self._outPath1 = ""
-            self.syncSnapshotCfg()
+    def onBatchBuildToggled(self, checked):
+        if checked:
+            # 显示批量构建对话框
+            self.batchBuildDialog = BatchBuildDialog(self)
+            self.batchBuildDialog.show()
+        else:
+            # 关闭批量构建对话框
+            if self.batchBuildDialog:
+                self.batchBuildDialog.close()
+                self.batchBuildDialog = None
 
-    def onOutPath2Changed(self):
-        if self.ui.lineEdit_outPath2.displayText() == "":
-            self._outPath2 = ""
-            self.syncSnapshotCfg()
-
-    def onClickOutPath1(self):
-        outPath = InputUtil.InPutDirectoryGUI()
-        if outPath == "":return
-        self._outPath1 = outPath
-        self.ui.lineEdit_outPath1.setText(outPath)
+    def onOutPathChanged(self):
+        """当输出路径文本变化时更新输出路径。"""
+        sender = self.sender()
+        if sender == self.ui.lineEdit_outPath1:
+            self._outPath1 = self.ui.lineEdit_outPath1.text()
+        elif sender == self.ui.lineEdit_outPath2:
+            self._outPath2 = self.ui.lineEdit_outPath2.text()
         self.syncSnapshotCfg()
 
-    def onClickOutPath2(self):
+    def onClickOutPath(self):
+        """处理输出路径按钮的点击事件。"""
+        sender = self.sender()
         outPath = InputUtil.InPutDirectoryGUI()
-        if outPath == "":return
-        self._outPath2 = outPath
-        self.ui.lineEdit_outPath2.setText(outPath)
+        if not outPath:
+            return
+        if sender == self.ui.toolButton_outPath1:
+            self._outPath1 = outPath
+            self.ui.lineEdit_outPath1.setText(outPath)
+        elif sender == self.ui.toolButton_outPath2:
+            self._outPath2 = outPath
+            self.ui.lineEdit_outPath2.setText(outPath)
         self.syncSnapshotCfg()
-
 
     def onSnapshotPathChanged(self):
+        """当快照路径选择变化时更新快照路径。"""
+        current_snapshot = self.ui.comboBox_snapshot.currentText()
+        if current_snapshot:
+            # 从用户数据中获取完整路径
+            index = self.ui.comboBox_snapshot.currentIndex()
+            self._snapshotPath = self.ui.comboBox_snapshot.itemData(index, Qt.UserRole)
+            # 如果radioButton_snapshot未被勾选，勾选它
+            if not self.ui.radioButton_snapshot.isChecked():
+                self.ui.radioButton_snapshot.setChecked(True)
+        else:
+            self._snapshotPath = None
         self.syncSnapshotCfg()
 
     def onClickSnapshotSet(self):
+        """处理设置快照路径的点击事件。"""
         outPath = InputUtil.InPutFilePathGUI()
-        if outPath == "":return
-        self.syncSnapshotCfg()
-        self._snapshopPath = outPath
-        self.ui.lineEdit_snapshot.setText(outPath)
-
-    def syncSnapshotCfg(self):
+        if not outPath:
+            return
         branch = self.ui.comboBox_allBranches.currentText()
         platform = self.ui.comboBox_platform.currentText()
-        snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
-        bindingInfo = snapshotBinding.get(branch) or {}
-        bindingInfo['check'] = self.ui.radioButton_snapshot.isChecked()
-        bindingInfo['snapshot_%s'%platform] = self.ui.lineEdit_snapshot.displayText()
-        bindingInfo['foa_outpath1'] = self.ui.lineEdit_outPath1.displayText()
-        bindingInfo['foa_outpath2'] = self.ui.lineEdit_outPath2.displayText()
-        snapshotBinding[branch] = bindingInfo
-        JsonUtil.saveInCfg('snapshot_binding', snapshotBinding)
+        snapshot_environment = JsonUtil.readInCfg('environment').get('snapshot')
+        branch_platform = f'{branch}_{platform}'
+        snapshot_cfg_path = FolderUtil.join(snapshot_environment, branch_platform)
+        FolderUtil.copy(outPath, snapshot_cfg_path)
+        self.displaySnapshot()
+        self.syncSnapshotCfg()
+
+    def syncSnapshotCfg(self):
+        """同步快照配置。"""
+        branch = self.ui.comboBox_allBranches.currentText()
+        platform = self.ui.comboBox_platform.currentText()
+        snapshot_binding = JsonUtil.readInCfg('snapshot_binding') or {}
+        binding_info = snapshot_binding.get(branch) or {}
+        binding_info['check'] = self.ui.radioButton_snapshot.isChecked()
+        binding_info[f'snapshot_{platform}'] = self._snapshotPath
+        binding_info['foa_outpath1'] = self.ui.lineEdit_outPath1.text()
+        binding_info['foa_outpath2'] = self.ui.lineEdit_outPath2.text()
+        snapshot_binding[branch] = binding_info
+        JsonUtil.saveInCfg('snapshot_binding', snapshot_binding)
 
     def onClickSwitchSnapshot(self):
-        self.syncSnapshotCfg()
-        isChecked = self.ui.radioButton_snapshot.isChecked()
-        if not isChecked:
-            self._snapshopPath = self.ui.lineEdit_snapshot.displayText()
-            self.ui.lineEdit_snapshot.clear()
+        """处理快照开关的切换。"""
+        is_checked = self.ui.radioButton_snapshot.isChecked()
+        if is_checked:
+            if not self._snapshotPath:
+                # 尝试从comboBox_snapshot获取快照路径
+                index = self.ui.comboBox_snapshot.currentIndex()
+                self._snapshotPath = self.ui.comboBox_snapshot.itemData(index, Qt.UserRole)
+                if not self._snapshotPath:
+                    # 如果仍然没有快照路径，提示创建
+                    branch = self.ui.comboBox_allBranches.currentText()
+                    platform = self.ui.comboBox_platform.currentText()
+                    self.promptCreateSnapshot(branch, platform)
         else:
-            branch = self.ui.comboBox_allBranches.currentText()
-            snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
-            bindingInfo = snapshotBinding.get(branch)
-            if bindingInfo:
-                platform = self.ui.comboBox_platform.currentText()
-                self.ui.lineEdit_snapshot.setText(self._snapshopPath or bindingInfo.get('snapshot_%s'%platform))
-            
+            # 当取消勾选时，不需要将self._snapshotPath设置为None
+            pass
+        self.syncSnapshotCfg()
 
+    def promptCreateSnapshot(self, branch, platform):
+        """在没有快照时提示用户创建快照。"""
+        reply = QMessageBox.question(
+            self,
+            "确认操作",
+            "快照路径未设置，是否自动创建快照？",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            XAUrl = G.getG("KBMgr").getBranchUrl(branch)
+            resUrl = FolderUtil.join(XAUrl, "res")
+            filesDict = FolderUtil.getFilesInfo(resUrl)
+            if not filesDict:
+                QMessageBox.warning(self, "目标资源不存在", "请检查目标资源路径是否正确。")
+                self.ui.radioButton_snapshot.setChecked(False)
+                self._snapshotPath = None
+                return
+            file_md5_map = Md5Util.fileTreeSnapshot(filesDict)
+            snapshot_environment = JsonUtil.readInCfg('environment').get('snapshot')
+            branch_platform = f'{branch}_{platform}'
+            snapshot_cfg_path = FolderUtil.join(snapshot_environment, branch_platform)
+            if not FolderUtil.exists(snapshot_cfg_path):
+                FolderUtil.create(snapshot_cfg_path)
+            unique_id = self._uniqueKey.split('-')[1]
+            new_snapshot_cfg_path = f'{snapshot_cfg_path}/snapshot_{unique_id}.json'
+            JsonUtil.writeDict(file_md5_map, new_snapshot_cfg_path)
+
+            # 更新binding_info和snapshot_binding
+            snapshot_binding = JsonUtil.readInCfg('snapshot_binding') or {}
+            binding_info = snapshot_binding.get(branch) or {}
+            binding_info[f'snapshot_{platform}'] = new_snapshot_cfg_path
+            snapshot_binding[branch] = binding_info
+            JsonUtil.saveInCfg('snapshot_binding', snapshot_binding)
+
+            self._snapshotPath = new_snapshot_cfg_path
+            self.displaySnapshot()
+        else:
+            self.ui.radioButton_snapshot.setChecked(False)
+            self._snapshotPath = None
 
     def refreshQuicParasComboBox(self):
+        """刷新快速参数组合框。"""
         self.ui.comboBox_quicParas.clear()
-        ALL_PARAS = JsonUtil.read(JsonUtil.PARAS)
-        self.ui.comboBox_quicParas.addItems(ALL_PARAS.keys())
-        if len(ALL_PARAS.keys()) <= 0:
+        all_paras = JsonUtil.read(JsonUtil.PARAS)
+        self.ui.comboBox_quicParas.addItems(all_paras.keys())
+        if not all_paras:
             self.setBuildView({})
             self.setBuildDefault()
 
     def onQuicParasAddAccepted(self, name):
+        """当添加快速参数后回调。"""
         self.refreshQuicParasComboBox()
         self.ui.comboBox_quicParas.setCurrentText(name)
 
     def onClickQuicParasAdd(self):
+        """处理添加快速参数的点击事件。"""
         self.ui.TipsDialog = QuicParasAddTips(self.onQuicParasAddAccepted)
         self.ui.TipsDialog.show()
 
     def onParasBoxChanged(self):
+        """处理快速参数选择的变化。"""
         name = self.ui.comboBox_quicParas.currentText()
-        if not name:return
-        paraVo = JsonUtil.readIn(JsonUtil.PARAS, name)
-        self.setBuildView(paraVo)
+        if not name:
+            return
+        para_vo = JsonUtil.readIn(JsonUtil.PARAS, name)
+        self.setBuildView(para_vo)
 
     def onClickQuicParasSync(self):
+        """同步快速参数。"""
         name = self.ui.comboBox_quicParas.currentText()
-        if name == "":
-            QMessageBox.warning(self, "同步失败", "请先添加一条快速参数")
-            # G.getG('LogMgr').getLogger(self._uniqueKey).info('快速参数设置同步失败，请先添加一条快速参数')
+        if not name:
+            QMessageBox.warning(self, "同步失败", "请先添加一条快速参数。")
         else:
-            paraDict = self.getBuildDict()
-            self.paraVo = ToolsMain.inputByDict(paraDict)
+            para_dict = self.getBuildDict()
+            self.paraVo = ToolsMain.inputByDict(para_dict)
             JsonUtil.saveIn(JsonUtil.PARAS, name, self.paraVo.getAll())
 
     def onClickQuicParasDel(self):
+        """处理删除快速参数的点击事件。"""
         name = self.ui.comboBox_quicParas.currentText()
         JsonUtil.deleteIn(JsonUtil.PARAS, name)
         self.refreshQuicParasComboBox()
 
-
     def onComboBoxChanged(self):
+        """处理分支或平台选择的变化。"""
         self.ui.lineEdit_pathSet.clear()
         branch = self.ui.comboBox_allBranches.currentText()
-        platform = self.ui.comboBox_platform.currentText()
         path = G.getG("KBMgr").getBranchUrl(branch)
         if path:
             self.ui.lineEdit_pathSet.setText(path)
+        self.displaySnapshot()
 
-        snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
-        bindingInfo = snapshotBinding.get(branch)
-        if bindingInfo:
-            self.ui.radioButton_snapshot.setChecked(bindingInfo.get('check'))
-            self.ui.lineEdit_snapshot.setText(bindingInfo.get('snapshot_%s'%platform))
+    def displaySnapshot(self):
+        """根据当前分支和平台显示快照信息。"""
+        branch = self.ui.comboBox_allBranches.currentText()
+        platform = self.ui.comboBox_platform.currentText()
+        snapshot_binding = JsonUtil.readInCfg('snapshot_binding') or {}
+        binding_info = snapshot_binding.get(branch)
+        if binding_info:
+            self.ui.radioButton_snapshot.setChecked(binding_info.get('check', False))
+            self._snapshotPath = binding_info.get(f'snapshot_{platform}', '')
+            self.ui.comboBox_snapshot.clear()
+            snapshot_environment = JsonUtil.readInCfg('environment').get('snapshot')
+            branch_platform = f'{branch}_{platform}'
+            snapshot_cfg_path = FolderUtil.join(snapshot_environment, branch_platform)
+            snapshot_cfgs = FolderUtil.getFilesInfo(snapshot_cfg_path)
+            snapshot_cfgs_sorted = sorted(
+                snapshot_cfgs.items(),
+                key=lambda x: FolderUtil.getLastModifiedTime(x[1]),
+                reverse=True
+            )
+            snapshot_file_paths = [file_path for _, file_path in snapshot_cfgs_sorted]
 
-            self.ui.lineEdit_outPath1.setText(bindingInfo.get('foa_outpath1'))
-            self.ui.lineEdit_outPath2.setText(bindingInfo.get('foa_outpath2'))
+            # 添加项时，设置右对齐，并添加工具提示
+            for file_path in snapshot_file_paths:
+                file_name = os.path.basename(file_path)
+                self.ui.comboBox_snapshot.addItem(file_name)
+                index = self.ui.comboBox_snapshot.findText(file_name)
+                self.ui.comboBox_snapshot.setItemData(index, file_path, Qt.ToolTipRole)  # 工具提示
+                self.ui.comboBox_snapshot.setItemData(index, file_path, Qt.UserRole)     # 用户数据，存储完整路径
+                self.ui.comboBox_snapshot.setItemData(index, Qt.AlignRight, Qt.TextAlignmentRole)
+
+            # 设置comboBox_snapshot的当前选择
+            if self._snapshotPath and self._snapshotPath in snapshot_file_paths:
+                index = snapshot_file_paths.index(self._snapshotPath)
+                self.ui.comboBox_snapshot.setCurrentIndex(index)
+            elif snapshot_file_paths:
+                self.ui.comboBox_snapshot.setCurrentIndex(0)
+                # 更新self._snapshotPath
+                index = self.ui.comboBox_snapshot.currentIndex()
+                self._snapshotPath = self.ui.comboBox_snapshot.itemData(index, Qt.UserRole)
+
+            self.ui.lineEdit_outPath1.setText(binding_info.get('foa_outpath1', ''))
+            self.ui.lineEdit_outPath2.setText(binding_info.get('foa_outpath2', ''))
         else:
             self.ui.radioButton_snapshot.setChecked(False)
-            self.ui.lineEdit_snapshot.setText('')
-            self.ui.lineEdit_outPath1.setText('')
-            self.ui.lineEdit_outPath2.setText('')
+            self.ui.lineEdit_outPath1.clear()
+            self.ui.lineEdit_outPath2.clear()
+            self.ui.comboBox_snapshot.clear()
+            self._snapshotPath = None
 
     def onClickPathSet(self):
+        """处理设置工程路径的点击事件。"""
         path = InputUtil.InPutDirectoryGUI()
-        if path == "":return
+        if not path:
+            return
         self.ui.lineEdit_pathSet.setText(path)
         branch = self.ui.comboBox_allBranches.currentText()
-        # branches = JsonUtil.readInCfg("branches") or {}
-        # branches[branch] = path
-        # JsonUtil.saveInCfg("branches", branches)
         G.getG("KBMgr").setBranchUrl(branch, path)
 
     def onPathSet(self):
-        path = self.ui.lineEdit_pathSet.displayText()
-        if path == "":return
+        """当工程路径文本变化时更新路径。"""
+        path = self.ui.lineEdit_pathSet.text()
+        if not path:
+            return
         branch = self.ui.comboBox_allBranches.currentText()
-        # branches = JsonUtil.readInCfg("branches") or {}
-        # branches[branch] = path
-        # JsonUtil.saveInCfg("branches", branches)
         G.getG("KBMgr").setBranchUrl(branch, path)
 
     def setBuildDefault(self):
-        ALL_PARAS = JsonUtil.read(JsonUtil.PARAS)
-        if len(ALL_PARAS.keys()) > 0:
+        """设置默认的构建参数。"""
+        all_paras = JsonUtil.read(JsonUtil.PARAS)
+        if all_paras:
             return
         self.ui.lineEdit_bigversion.setPlaceholderText(FOA_BUILD_VO['bigversion'])
         self.ui.lineEdit_channel.setPlaceholderText(FOA_BUILD_VO['channel'])
         self.ui.lineEdit_foaName.setPlaceholderText(FOA_BUILD_VO['foaName'])
         self.ui.lineEdit_focName.setPlaceholderText(FOA_BUILD_VO['focName'])
         self.ui.lineEdit_sysversion.setPlaceholderText(FOA_BUILD_VO['sysversion'])
+        self.ui.lineEdit_targetRes.setPlaceholderText(FOA_BUILD_VO['res_target'])
 
+        # 设置组合框的默认选择
         self.ui.comboBox_isDebug.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['isdebug']))
         self.ui.comboBox_sandBox.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['sandbox']))
         self.ui.comboBox_useLocals.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['use_localserverlist']))
         self.ui.comboBox_useSDK.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['use_sdk']))
         self.ui.comboBox_testapp.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['istestapp']))
         self.ui.comboBox_appstore.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['isAppleStoreReview']))
-
-        self.ui.comboBox_lang.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['lang']))
-        self.ui.comboBox_platform.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['platform']))
+        self.ui.comboBox_lang.setCurrentText(FOA_BUILD_VO['lang'])
+        self.ui.comboBox_platform.setCurrentText(FOA_BUILD_VO['platform'])
         self.ui.comboBox_is64.setCurrentText(StringUtil.Py2LuaBool(FOA_BUILD_VO['is64']))
-        self.ui.lineEdit_targetRes.setPlaceholderText(FOA_BUILD_VO['res_target'])
-
 
     def setBuildView(self, buildDict):
-        self.ui.lineEdit_bigversion.setText(buildDict.get('bigversion'))
-        self.ui.lineEdit_channel.setText(buildDict.get('channel'))
-        self.ui.lineEdit_foaName.setText(buildDict.get('foaName'))
-        self.ui.lineEdit_focName.setText(buildDict.get('focName'))
-        self.ui.lineEdit_sysversion.setText(buildDict.get('sysversion'))
+        """从字典中设置构建参数。"""
+        self.ui.lineEdit_bigversion.setText(buildDict.get('bigversion', ''))
+        self.ui.lineEdit_channel.setText(buildDict.get('channel', ''))
+        self.ui.lineEdit_foaName.setText(buildDict.get('foaName', ''))
+        self.ui.lineEdit_focName.setText(buildDict.get('focName', ''))
+        self.ui.lineEdit_sysversion.setText(buildDict.get('sysversion', ''))
+        self.ui.lineEdit_targetRes.setText(buildDict.get('res_target', ''))
 
-        self.ui.comboBox_isDebug.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('isdebug') or FOA_BUILD_VO['isdebug']))
-        self.ui.comboBox_sandBox.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('sandbox') or FOA_BUILD_VO['sandbox']))
-        self.ui.comboBox_useLocals.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('use_localserverlist') or FOA_BUILD_VO['use_localserverlist']))
-        self.ui.comboBox_useSDK.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('use_sdk') or FOA_BUILD_VO['use_sdk']))
-        self.ui.comboBox_testapp.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('istestapp') or FOA_BUILD_VO['istestapp']))
-        self.ui.comboBox_appstore.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('isAppleStoreReview') or FOA_BUILD_VO['isAppleStoreReview']))
-
-        self.ui.comboBox_lang.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('lang') or FOA_BUILD_VO['lang']))
-        self.ui.comboBox_platform.setCurrentText(
-            StringUtil.Py2LuaBool(buildDict.get('platform') or FOA_BUILD_VO['platform']))
-        self.ui.comboBox_is64.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('is64') or FOA_BUILD_VO['is64']))
-        self.ui.lineEdit_targetRes.setText(buildDict.get('res_target'))
-
+        # 更新组合框
+        self.ui.comboBox_isDebug.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('isdebug', FOA_BUILD_VO['isdebug'])))
+        self.ui.comboBox_sandBox.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('sandbox', FOA_BUILD_VO['sandbox'])))
+        self.ui.comboBox_useLocals.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('use_localserverlist', FOA_BUILD_VO['use_localserverlist'])))
+        self.ui.comboBox_useSDK.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('use_sdk', FOA_BUILD_VO['use_sdk'])))
+        self.ui.comboBox_testapp.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('istestapp', FOA_BUILD_VO['istestapp'])))
+        self.ui.comboBox_appstore.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('isAppleStoreReview', FOA_BUILD_VO['isAppleStoreReview'])))
+        self.ui.comboBox_lang.setCurrentText(buildDict.get('lang', FOA_BUILD_VO['lang']))
+        self.ui.comboBox_platform.setCurrentText(buildDict.get('platform', FOA_BUILD_VO['platform']))
+        self.ui.comboBox_is64.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('is64', FOA_BUILD_VO['is64'])))
 
     def getBuildDict(self):
-        buildDict = {}
-        opt = self._uniqueKey.split('-')[0]
-        buildDict['opt'] = opt
-        buildDict['bigversion'] = self.ui.lineEdit_bigversion.displayText()
-        buildDict['branches'] = self.ui.comboBox_allBranches.currentText()
-        buildDict['channel'] = self.ui.lineEdit_channel.displayText()
-        buildDict['foaName'] = self.ui.lineEdit_foaName.displayText()
-        buildDict['focName'] = self.ui.lineEdit_focName.displayText()
-        buildDict['sysversion'] = self.ui.lineEdit_sysversion.displayText()
-        buildDict['tag'] = self.ui.lineEdit_channel.displayText()
-        res_target = self.ui.lineEdit_targetRes.displayText()
-        buildDict['snapshopPath'] = self.ui.lineEdit_snapshot.displayText()
-        buildDict['outPath1'] = self.ui.lineEdit_outPath1.displayText()
-        buildDict['outPath2'] = self.ui.lineEdit_outPath2.displayText()
-        buildDict['res_target'] = None if res_target == "" else res_target
-
-        buildDict['isdebug'] = StringUtil.Lua2PyBool(self.ui.comboBox_isDebug.currentText())
-        buildDict['sandbox'] = StringUtil.Lua2PyBool(self.ui.comboBox_sandBox.currentText())
-        buildDict['use_localserverlist'] = StringUtil.Lua2PyBool(self.ui.comboBox_useLocals.currentText())
-        buildDict['use_sdk'] = StringUtil.Lua2PyBool(self.ui.comboBox_useSDK.currentText())
-        buildDict['istestapp'] = StringUtil.Lua2PyBool(self.ui.comboBox_testapp.currentText())
-        buildDict['isAppleStoreReview'] = StringUtil.Lua2PyBool(self.ui.comboBox_appstore.currentText())
-
-        buildDict['lang'] = StringUtil.Lua2PyBool(self.ui.comboBox_lang.currentText())
-        buildDict['platform'] = StringUtil.Lua2PyBool(self.ui.comboBox_platform.currentText())
-        buildDict['is64'] = StringUtil.Lua2PyBool(self.ui.comboBox_is64.currentText())
-        
-
+        """从UI收集构建参数到字典中。"""
+        buildDict = {
+            'opt': self._uniqueKey.split('-')[0],
+            'bigversion': self.ui.lineEdit_bigversion.text(),
+            'branches': self.ui.comboBox_allBranches.currentText(),
+            'channel': self.ui.lineEdit_channel.text(),
+            'foaName': self.ui.lineEdit_foaName.text(),
+            'focName': self.ui.lineEdit_focName.text(),
+            'sysversion': self.ui.lineEdit_sysversion.text(),
+            'tag': self.ui.lineEdit_channel.text(),
+            'res_target': self.ui.lineEdit_targetRes.text() or None,
+            'snapshotPath': self._snapshotPath,
+            'outPath1': self._outPath1,
+            'outPath2': self._outPath2,
+            'isdebug': StringUtil.Lua2PyBool(self.ui.comboBox_isDebug.currentText()),
+            'sandbox': StringUtil.Lua2PyBool(self.ui.comboBox_sandBox.currentText()),
+            'use_localserverlist': StringUtil.Lua2PyBool(self.ui.comboBox_useLocals.currentText()),
+            'use_sdk': StringUtil.Lua2PyBool(self.ui.comboBox_useSDK.currentText()),
+            'istestapp': StringUtil.Lua2PyBool(self.ui.comboBox_testapp.currentText()),
+            'isAppleStoreReview': StringUtil.Lua2PyBool(self.ui.comboBox_appstore.currentText()),
+            'lang': self.ui.comboBox_lang.currentText(),
+            'platform': self.ui.comboBox_platform.currentText(),
+            'is64': StringUtil.Lua2PyBool(self.ui.comboBox_is64.currentText())
+        }
         return buildDict
 
     def getFuncOutPath(self):
-        FOA_BUILD_PATH = 'sample/output/'
-        arr = self.getUniqueKey().split('-', 1)
-        workDir = '%s/%s/%s/' %(FOA_BUILD_PATH, arr[0], arr[1])
-        if not FolderUtil.exists(workDir):
-            FolderUtil.create(workDir)
-        return workDir
+        """根据唯一键生成功能输出路径。"""
+        foa_build_path = 'sample/output/'
+        arr = self._uniqueKey.split('-', 1)
+        work_dir = f'{foa_build_path}/{arr[0]}/{arr[1]}/'
+        if not FolderUtil.exists(work_dir):
+            FolderUtil.create(work_dir)
+        return work_dir
 
     def getVO(self):
+        """获取参数VO（值对象）。"""
         return self.paraVo
 
     def addSysversion(self, sysversion):
+        """自动递增系统版本号。"""
         if sysversion:
-            # 将 sysversion 拆分为主版本号和子版本号（假设版本号为 x.y.z 的格式）
             version_parts = sysversion.split('.')
             if len(version_parts) == 3:
-                # 将最后一个数字递增
                 version_parts[2] = str(int(version_parts[2]) + 1)
-                # 重新拼接成新的版本号
                 new_sysversion = '.'.join(version_parts)
-                # 设置新的版本号到 UI 中
                 self.ui.lineEdit_sysversion.setText(new_sysversion)
-                G.getG('LogMgr').getLogger(self._uniqueKey).info("自动递增版本号成功,new_sysversion:%s" % new_sysversion)
+                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"自动递增版本号成功，新版本号：{new_sysversion}")
                 self.onClickQuicParasSync()
             else:
-                print("sysversion 格式不正确")
+                print("sysversion格式不正确")
         else:
             print("未找到系统版本信息")
 
     def onClickBuild(self):
+        """处理构建按钮的点击事件。"""
+        if self.ui.radioButton_batchBuild.isChecked():
+            # 批量构建模式
+            if not self.batchBuildDialog:
+                QMessageBox.warning(self, "批量构建", "没有选中的配置进行批量构建。")
+                return
+            selected_configs = self.batchBuildDialog.getSelectedConfigurations()
+            if not selected_configs:
+                QMessageBox.warning(self, "批量构建", "没有选中的配置进行批量构建。")
+                return
+            self.is_batch_building = True
+            build_results = []
+            for config_name in selected_configs:
+                index = self.ui.comboBox_quicParas.findText(config_name)
+                if index != -1:
+                    self.ui.comboBox_quicParas.setCurrentIndex(index)
+                    self.onParasBoxChanged()  # 更新界面参数
+                    success = self.performBuild()  # 执行构建逻辑
+                    build_results.append((config_name, success))
+                    if not success:
+                        # 如果构建失败，停止批量构建
+                        G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"构建失败，停止批量构建。配置：{config_name}")
+                        QMessageBox.warning(self, "批量构建中断", f"构建失败，批量构建已中断。配置：{config_name}")
+                        break
+                else:
+                    G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"未找到配置：{config_name}")
+            self.is_batch_building = False
+            # 构建结果摘要
+            summary = "\n".join(
+                [f"{name}: {'成功' if success else '失败'}" for name, success in build_results]
+            )
+            QMessageBox.information(self, "批量构建完成", f"批量构建已完成：\n{summary}")
+        else:
+            # 单个构建模式
+            self.is_batch_building = False
+            self.performBuild()
+
+    def performBuild(self):
+        """执行构建逻辑。"""
         paraDict = self.getBuildDict()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('开始获取build参数')
+        G.getG('LogMgr').getLogger(self._uniqueKey).info('开始获取构建参数')
         self.paraVo = ToolsMain.inputByDict(paraDict)
-        self.paraVo.setUniqueKey(self.getUniqueKey())
+        self.paraVo.setUniqueKey(self._uniqueKey)
         self.paraVo.setFuncOutPath(self.getFuncOutPath())
 
         # 校验
         branches = self.paraVo.getVal("branches")
         XA_Url = G.getG("KBMgr").getBranchUrl(branches)
         res_target = self.paraVo.getVal("res_target")
-        platformRes = XA_Url +'/' + res_target
+        platformRes = f'{XA_Url}/{res_target}'
         if not FolderUtil.exists(platformRes):
-            QMessageBox.warning(self, "目标资源不存在", "分支%s的工程路径中，没有文件夹:%s\n请修改参数面板中目标资源\n或者检查工程路径中的指定文件夹" % (branches, res_target))
-            return
+            error_message = (
+                f"分支'{branches}'的工程路径中，没有文件夹'{res_target}'。\n"
+                "请修改参数面板中目标资源或检查工程路径中的指定文件夹。"
+            )
+            G.getG('LogMgr').getLogger(self._uniqueKey).warning("目标资源不存在")
+            if self.is_batch_building:
+                # 在批量构建模式下，返回 False 表示失败
+                return False
+            else:
+                QMessageBox.warning(self, "目标资源不存在", error_message)
+                return
 
-        snapshopPath = self.paraVo.getVal("snapshopPath")
-        if not FolderUtil.exists(snapshopPath):
+        snapshot_path = self.paraVo.getVal("snapshotPath")
+        if snapshot_path and not FolderUtil.exists(snapshot_path):
             self.ui.radioButton_snapshot.setChecked(False)
-            self.ui.lineEdit_snapshot.setText('')
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning('文件快照不存在,此次构建取消自动化转资源:%s' % snapshopPath)
+            self._snapshotPath = None
+            G.getG('LogMgr').getLogger(self._uniqueKey).warning(
+                f'快照文件不存在，此次构建取消自动化转资源：{snapshot_path}')
 
-
-        foaErrors, successed = ToolsMain.main(self.paraVo)
-        if not foaErrors and successed:
+        foa_errors, successed = ToolsMain.main(self.paraVo)
+        if not foa_errors and successed:
             self.addSysversion(self.paraVo.getVal('sysversion'))
             self.syncSnapshotCfg()
             G.getG('LogMgr').getLogger(self._uniqueKey).info("构建成功")
-            QMessageBox.information(self, "构建成功", "构建成功")
+            if not self.is_batch_building:
+                QMessageBox.information(self, "构建成功", "构建成功")
+        else:
+            error_msg = "构建失败，请检查日志以获取详细信息。"
+            G.getG('LogMgr').getLogger(self._uniqueKey).warning("构建失败")
+            if self.is_batch_building:
+                # 在批量构建模式下，返回 False 表示失败
+                return False
+            else:
+                QMessageBox.warning(self, "构建失败", error_msg)
+                return
 
+        self.displaySnapshot()
         if self._callback:
-            self._callback(self.getUniqueKey())
+            self._callback(self._uniqueKey)
+
+        # 返回 True 表示成功
+        return True
+
+    def onSnapshotItemRightClicked(self, position):
+        """处理快照下拉列表项的右键点击事件。"""
+        index = self.ui.comboBox_snapshot.view().indexAt(position)
+        if not index.isValid():
+            return
+        # 获取用户数据中的完整文件路径
+        file_path = self.ui.comboBox_snapshot.itemData(index.row(), Qt.UserRole)
+        if not file_path:
+            return
+        menu = QMenu()
+        action_open_in_explorer = QAction("在文件资源管理器中显示", self)
+        action_open_in_explorer.triggered.connect(lambda: TerminalUtil.openInExplorer(file_path))
+        menu.addAction(action_open_in_explorer)
+        menu.exec_(QCursor.pos())

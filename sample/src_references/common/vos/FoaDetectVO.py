@@ -20,7 +20,7 @@ FOA_BUILD_VO = {
     "channel" : "and_64_xiaomi",
     "isAppleStoreReview": False,
     "istestapp": False,
-    "snapshopPath":"",
+    "snapshotPath":"",
     # 转资源
     'sourceItems':None,
     'inputUrl':"",

@@ -205,7 +205,7 @@ QPushButton:pressed {
     </rect>
    </property>
    <property name="title">
-    <string>正则匹配</string>
+    <string>通配符匹配</string>
    </property>
    <widget class="QLineEdit" name="lineEdit_match">
     <property name="geometry">
@@ -217,7 +217,7 @@ QPushButton:pressed {
      </rect>
     </property>
     <property name="placeholderText">
-     <string>指定匹配规则，例如*.ts</string>
+     <string>指定匹配规则，例如*.pfx </string>
     </property>
    </widget>
   </widget>

@@ -1094,24 +1094,6 @@ QPushButton:pressed {
     <string>Del</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit_snapshot">
-   <property name="geometry">
-    <rect>
-     <x>470</x>
-     <y>50</y>
-     <width>231</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>微软雅黑</family>
-    </font>
-   </property>
-   <property name="placeholderText">
-    <string>指定历史版本的资源快照</string>
-   </property>
-  </widget>
   <widget class="QToolButton" name="toolButton_snapshotSet">
    <property name="geometry">
     <rect>
@@ -1252,6 +1234,35 @@ QPushButton:pressed {
    </property>
    <property name="placeholderText">
     <string>指定FOA的线上输出路径</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_snapshot">
+   <property name="geometry">
+    <rect>
+     <x>468</x>
+     <y>48</y>
+     <width>236</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>指定历史版本的资源快照</string>
+   </property>
+   <property name="statusTip">
+    <string>指定历史版本的资源快照</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="radioButton_batchBuild">
+   <property name="geometry">
+    <rect>
+     <x>780</x>
+     <y>90</y>
+     <width>95</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>批量构建</string>
    </property>
   </widget>
  </widget>

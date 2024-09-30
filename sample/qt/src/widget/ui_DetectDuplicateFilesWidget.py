@@ -112,7 +112,7 @@ class Ui_DetectDuplicateFilesWidget(object):
         self.groupBox_2.setTitle(QCoreApplication.translate("DetectDuplicateFilesWidget", u"In", None))
         self.lineEdit_inPath.setPlaceholderText(QCoreApplication.translate("DetectDuplicateFilesWidget", u"\u8f93\u5165\u8def\u5f84", None))
         self.toolButton_inPath.setText(QCoreApplication.translate("DetectDuplicateFilesWidget", u"...", None))
-        self.groupBox_3.setTitle(QCoreApplication.translate("DetectDuplicateFilesWidget", u"\u6b63\u5219\u5339\u914d", None))
-        self.lineEdit_match.setPlaceholderText(QCoreApplication.translate("DetectDuplicateFilesWidget", u"\u6307\u5b9a\u5339\u914d\u89c4\u5219\uff0c\u4f8b\u5982*.ts", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("DetectDuplicateFilesWidget", u"\u901a\u914d\u7b26\u5339\u914d", None))
+        self.lineEdit_match.setPlaceholderText(QCoreApplication.translate("DetectDuplicateFilesWidget", u"\u6307\u5b9a\u5339\u914d\u89c4\u5219\uff0c\u4f8b\u5982*.pfx ", None))
     # retranslateUi
 

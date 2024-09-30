@@ -68,4 +68,15 @@ def check_code_syntax(code_path):
         return False, non_compliant_files
     return True, []
 
+def openInExplorer(file_path):
+    """
+    使用 Windows 资源管理器打开并选中指定的文件。
+    """
+    # 需要将路径中的特殊字符进行转义，以确保路径正确
+    file_path = os.path.abspath(file_path).replace('/', '\\')
+    try:
+        # 使用 explorer 命令打开文件资源管理器并选中指定文件
+        subprocess.Popen(f'explorer /select,"{file_path}"', shell=True)
+    except Exception as e:
+        return False, f"无法打开文件资源管理器: {str(e)}"
 

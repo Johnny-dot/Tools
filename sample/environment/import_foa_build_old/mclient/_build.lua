@@ -391,6 +391,6 @@ archive.compressMode = _Archive.Compress7z
 local name = "rghw"
 local foaNameFont = out .. '/' .. name .. '_' .. version
 archive:save(foaNameFont .. '.text', foaNameFont .. '.txt', "6a7bf9ad539301d1795155eca6425e7f")
-deleFolder("XA/code")
-deleFolder("XA/res")
+-- deleFolder("XA/code")
+-- deleFolder("XA/res")
 _abort()

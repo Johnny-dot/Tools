@@ -2,7 +2,7 @@ import os
 import hashlib
 import time
 import json
-import re
+import fnmatch
 
 from sample.src_references.common.utils import FileUtil, FolderUtil
 
@@ -26,9 +26,7 @@ class DetectDuplicate:
         return md5.hexdigest()
 
     def convert_size(self, size_bytes):
-        """
-        将字节转换为MB或GB的单位，按照Windows文件管理系统的显示规则。
-        """
+        """将字节转换为MB或GB的单位，按照Windows文件管理系统的显示规则。"""
         if size_bytes < 1024:
             return f"{size_bytes} Bytes"
         elif size_bytes < 1024 ** 2:
@@ -39,12 +37,10 @@ class DetectDuplicate:
             return f"{size_bytes / 1024 ** 3:.2f} GB"
 
     def file_matches_pattern(self, file_path):
-        """
-        检查文件路径是否与匹配词的正则表达式匹配。
-        """
+        """检查文件路径是否与匹配词的通配符匹配。"""
         if not self._match_pattern:
             return True  # 如果没有设定匹配词，则不过滤，所有文件都匹配
-        return re.search(self._match_pattern, file_path) is not None
+        return fnmatch.fnmatch(file_path, self._match_pattern)
 
     def find_duplicates(self):
         self._pendingResources.clear()
@@ -55,8 +51,9 @@ class DetectDuplicate:
             for file in files:
                 file_path = os.path.join(root, file)
 
-                # 检查文件是否符合正则匹配词
+                # 检查文件是否符合通配符匹配词
                 if not self.file_matches_pattern(file_path):
+                    print(f"Not Matched: {file_path}")  # 调试输出
                     continue
 
                 try:
