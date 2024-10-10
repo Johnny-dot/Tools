@@ -2,7 +2,6 @@
     "files": [
         "main.py",
         "sample/qt/src/mainwindow.ui",
-        "sample/qt/src/pyui/CheckableComboBox.py",
         "sample/qt/src/pyui/DragListWidget.py",
         "sample/qt/src/pyui/GridProgressBar.py",
         "sample/qt/src/pyui/QTextEditLogger.py",
