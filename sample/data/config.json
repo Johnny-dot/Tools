@@ -39,5 +39,15 @@
     "branches": {
         "devA": "E:/kuangbao/devA/XA",
         "tagA": "E:/kuangbao/tagA/XA"
+    },
+    "main_branches_repo" :{
+        "develop":"http://devsvn.uuzuonline.net/redgold_182/chengxu/branches/gongce0.1-dev-shoufa/XAserver",
+        "develop_test1":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/test1",
+        "develop_test2":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/test"
+    },
+    "ob_branches_repo" : {
+        "release":"http://devsvn.uuzuonline.net/redgold_182/chengxu/branches/gongce0.1/XAserver",
+        "release_test1":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/test2",
+        "release_test2":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/test3"
     }
 }

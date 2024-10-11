@@ -12,12 +12,7 @@ from sample.qt.src.widget.ui_BranchCoverWidget import Ui_BranchCoverWidget
 
 import sample.src_references.common.g.G as G
 import sample.src_references.Main as ToolsMain
-import sample.src_references.common.vos.BranchCoverVO as BranchCoverVO
-from sample.src_references.common.utils import FolderUtil
-from sample.src_references.common.vos.BranchCoverVO import OB_BRANCHES_REPO
-
-MAIN_BRANCHES_REPO = BranchCoverVO.MAIN_BRANCHES_REPO
-OB_BRANCHES_REPO = BranchCoverVO.OB_BRANCHES_REPO
+from sample.src_references.common.utils import FolderUtil, JsonUtil
 
 
 class BranchCoverWidget(QWidget):
@@ -46,12 +41,15 @@ class BranchCoverWidget(QWidget):
         return self.paraVo
 
     def initBranchCoverPage(self):
+        main_branches_repo = JsonUtil.readInCfg("main_branches_repo") or {}
+        ob_branches_repo = JsonUtil.readInCfg("ob_branches_repo") or {}
+
         # 连接构建按钮的点击事件
         self.ui.pushButton_build.clicked.connect(self.onClickBuild)
 
         # 设置主分支的 comboBox
         self.ui.comboBox_main.clear()
-        for key, value in MAIN_BRANCHES_REPO.items():
+        for key, value in main_branches_repo.items():
             display_text = f"{key}: {value}"
             self.ui.comboBox_main.addItem(display_text, userData=value)
             index = self.ui.comboBox_main.count() - 1
@@ -59,9 +57,9 @@ class BranchCoverWidget(QWidget):
 
         # 设置 ob 分支的 comboBox
         self.ui.comboBox_ob.clear()
-        for key, value in OB_BRANCHES_REPO.items():
+        for key, value in ob_branches_repo.items():
             display_text = f"{key}: {value}"
-            print(display_text, "OB_BRANCHES_REPO")
+            print(display_text, "ob_branches_repo")
             self.ui.comboBox_ob.addItem(display_text, userData=value)
             index = self.ui.comboBox_ob.count() - 1
             self.ui.comboBox_ob.setItemData(index, display_text, Qt.ToolTipRole)  # 设置工具提示以显示完整文本
