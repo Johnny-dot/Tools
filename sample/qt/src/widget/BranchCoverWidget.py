@@ -1,4 +1,5 @@
 # 该 Python 文件使用以下编码：utf-8
+from datetime import datetime
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt
@@ -60,17 +61,33 @@ class BranchCoverWidget(QWidget):
         self.ui.comboBox_ob.clear()
         for key, value in OB_BRANCHES_REPO.items():
             display_text = f"{key}: {value}"
+            print(display_text, "OB_BRANCHES_REPO")
             self.ui.comboBox_ob.addItem(display_text, userData=value)
             index = self.ui.comboBox_ob.count() - 1
             self.ui.comboBox_ob.setItemData(index, display_text, Qt.ToolTipRole)  # 设置工具提示以显示完整文本
 
+    from datetime import datetime
+
     def getBuildDict(self):
+        # 获取源地址和目标地址
+        source_repository_url = self.ui.comboBox_main.currentData()
+        destination_repository_url = self.ui.comboBox_ob.currentData()
+
         # 获取构建字典，包含主分支和 ob 分支的数据
+        commit_message = self.ui.textEdit_log.toPlainText()
+
+        # 如果 commit_message 为空，使用当前日期、时间、源地址和目标地址作为默认提交信息
+        if not commit_message.strip():
+            commit_message = (
+                f"自动提交于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                f"源: {source_repository_url}, 目标: {destination_repository_url}"
+            )
+
         buildDict = {
             "opt": "BRANCH_COVER",
-            "source_repository_url": self.ui.comboBox_main.currentData(),
-            "destination_repository_url": self.ui.comboBox_ob.currentData(),
-            "commit_message": self.ui.textEdit_log.toPlainText()
+            "source_repository_url": source_repository_url,
+            "destination_repository_url": destination_repository_url,
+            "commit_message": commit_message
         }
         return buildDict
 

@@ -91,7 +91,7 @@ class BranchCover:
 
         # 检查是否有改动需要提交
         if not SvnUtil.hasChangesToCommit(dest_checkout_dir, self.logger):
-            self.logger.warning("没有需要提交的改动。")
+            self.logger.warning("没有需要提交的改动,合并取消。")
             return
 
         # 提交本地修改到目标仓库

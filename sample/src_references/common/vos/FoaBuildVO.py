@@ -30,6 +30,10 @@ FOA_BUILD_VO = {
         'outputUrlExtra':"",
         # 文件去重
         'match_text':"",
+        # 合并分支
+        'source_repository_url':"",
+        'destination_repository_url':"",
+        'commit_message':"",
     }
 # iter(
 # )
