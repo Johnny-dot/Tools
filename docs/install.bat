@@ -1,11 +1,23 @@
 @echo off
 
-:: 激活虚拟环境
-call venv\Scripts\activate
+:: 设置虚拟环境路径为 Tools 根目录
+set VENV_PATH=..\venv
+
+:: 检查虚拟环境是否存在
+if exist %VENV_PATH%\Scripts\activate (
+    echo Activating virtual environment...
+    call %VENV_PATH%\Scripts\activate
+) else (
+    echo Virtual environment not found. Creating a new one in Tools root directory...
+    python -m venv %VENV_PATH%
+    echo Activating virtual environment...
+    call %VENV_PATH%\Scripts\activate
+)
 
 :: 检查并安装 Python 依赖
 echo Installing Python dependencies from requirements.txt...
 pip install -r requirements.txt
+
 
 :: 检查是否已安装 Scoop
 echo Checking if Scoop is installed...
