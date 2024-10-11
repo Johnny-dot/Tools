@@ -1,5 +1,8 @@
 @echo off
 
+:: 激活虚拟环境
+call venv\Scripts\activate
+
 :: 检查并安装 Python 依赖
 echo Installing Python dependencies from requirements.txt...
 pip install -r requirements.txt
@@ -50,8 +53,13 @@ where svn >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     echo SVN is not installed. Installing SVN with Scoop...
     powershell -ExecutionPolicy RemoteSigned -File "%SCOOP_PATH%\scoop.ps1" install svn
+    
+    :: 更新 PATH 环境变量，确保终端可以使用 SVN 命令
+    setx PATH "%SCOOP_PATH%;%PATH%" /M
+    
+    echo SVN installed successfully and added to PATH.
 ) else (
-    echo SVN is already installed.
+    echo SVN is already installed and available in PATH.
 )
 
 :: 完成
