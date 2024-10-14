@@ -21,6 +21,7 @@ class BranchCover:
         commit_message = self.paraVo.getVal('commit_message')
         temp_directory = self.workPath
 
+        FolderUtil.createSafely(temp_directory)
         src_checkout_dir = FolderUtil.join(temp_directory, 'src_checkout')
         dest_checkout_dir = FolderUtil.join(temp_directory, 'dest_checkout')
 
