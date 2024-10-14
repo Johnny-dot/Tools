@@ -6,7 +6,8 @@
         "build": "sample/environment/import_foa_build_old/build",
         "Android32": "sample/environment/import_foa_build_old/Android32",
         "Android64": "sample/environment/import_foa_build_old/Android64",
-        "mclient": "sample/environment/import_foa_build_old/mclient"
+        "mclient": "sample/environment/import_foa_build_old/mclient",
+        "branchCover": "sample/environment/import_branch_cover"
     },
     "snapshot_binding": {
         "devB": {
