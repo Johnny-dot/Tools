@@ -13,6 +13,7 @@ from sample.src_references.plugin_foa_build.FoaBuild import FoaBuild
 from sample.src_references.plugin_foa_detect.FoaDetect import FoaDetect
 from sample.src_references.plugin_res_convert.ResConvert import ResConvert
 from sample.src_references.plugin_duplicate_detect.DetectDuplicate import DetectDuplicate
+from sample.src_references.plugin_debug_analysis.DebugAnalysis import DebugAnalysis
 
 FOA_BUILD_VO = KB_VO.FOA_BUILD_VO
 TYPE_ANALYZE_PARAMS = KB_VO.TYPE_ANALYZE_PARAMS
@@ -37,6 +38,9 @@ def main(paraVo):
     elif opt == 'FOA_DETECT':
         foadetect = FoaDetect(paraVo)
         return foadetect.main()
+    elif opt == 'DEBUG_ANALYSIS':
+        debuganalysis = DebugAnalysis(paraVo)
+        return debuganalysis.main()
     else:
         print('不支持的操作类型%s' % opt)
 

@@ -6,6 +6,7 @@
         "sample/qt/src/pyui/GridProgressBar.py",
         "sample/qt/src/pyui/QTextEditLogger.py",
         "sample/qt/src/widget/BranchCoverWidget.ui",
+        "sample/qt/src/widget/DebugAnalysisWidget.ui",
         "sample/qt/src/widget/DetectDuplicateFilesWidget.ui",
         "sample/qt/src/widget/FilesMD5Snapshot.ui",
         "sample/qt/src/widget/FoaBuildWidget.ui",

@@ -6,6 +6,7 @@ ENUM_OPT = {
     "BRANCH_COVER" : "BRANCH_COVER",
     "RES_NAMING" : "RES_NAMING",
     "FOA_DETECT" : "FOA_DETECT",
+    "DEBUG_ANALYSIS" : "DEBUG_ANALYSIS",
 }
 
 ENUM_OPT_LANG = {
@@ -16,6 +17,7 @@ ENUM_OPT_LANG = {
     "BRANCH_COVER" : "合并分支",
     "RES_NAMING" : "资源命名",
     "FOA_DETECT" : "FOA检测",
+    "DEBUG_ANALYSIS" : "日志分析",
 }
 
 ENUM_OPT_QTUI = {
@@ -26,4 +28,5 @@ ENUM_OPT_QTUI = {
     # "RES_NAMING" : "ResNamingWidget",
     "DETECT_DUPLICATE_FILES" : "DetectDuplicateFilesWidget",
     "FOA_DETECT" : "FoaDetectWidget",
+    "DEBUG_ANALYSIS" : "DebugAnalysisWidget",
 }
