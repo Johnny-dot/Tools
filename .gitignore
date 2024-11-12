@@ -74,3 +74,4 @@ CMakeLists.txt.user*
 /sample/environment/import_foa_build_old/Android64/temp
 /sample/environment/import_foa_build_old/build/temp
 /sample/environment/import_foa_build_old/mclient/XA
+/venv
