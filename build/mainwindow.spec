@@ -55,7 +55,7 @@ a = Analysis(
     ('E:/kuangbao/Tools2/sample/src_references', 'sample/src_references')
 ],
     pathex=['../..'],  # 项目根目录作为 pathex
-    hiddenimports=['Levenshtein', 'PyInstaller', 'PySide6', '_distutils_hack', '_pyinstaller_hooks_contrib', 'altgraph', 'fuzz', 'fuzzywuzzy', 'importlib_metadata', 'ordlookup', 'packaging', 'pefile', 'peutils', 'pip', 'pkg_resources', 'pyperclip', 'rapidfuzz', 'setuptools', 'shiboken6', 'win32ctypes', 'zipp'],
+    hiddenimports=['Levenshtein', 'PyInstaller', 'PySide6', '_distutils_hack', '_pyinstaller_hooks_contrib', 'altgraph', 'dateutil', 'et_xmlfile', 'fuzz', 'fuzzywuzzy', 'importlib_metadata', 'numpy', 'openpyxl', 'ordlookup', 'packaging', 'pandas', 'pefile', 'peutils', 'pip', 'pkg_resources', 'pyperclip', 'pytz', 'rapidfuzz', 'setuptools', 'shiboken6', 'six', 'tzdata', 'win32ctypes', 'zipp'],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
