@@ -11,6 +11,7 @@
         "sample/qt/src/widget/FilesMD5Snapshot.ui",
         "sample/qt/src/widget/FoaBuildWidget.ui",
         "sample/qt/src/widget/FoaDetectWidget.ui",
+        "sample/qt/src/widget/GMSerializeWidget.ui",
         "sample/qt/src/widget/QuicParasAddTips.ui",
         "sample/qt/src/widget/ResConvertWidget.ui"
     ]

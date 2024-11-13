@@ -11,6 +11,7 @@ from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.plugin_branch_cover.BranchCover import BranchCover
 from sample.src_references.plugin_foa_build.FoaBuild import FoaBuild
 from sample.src_references.plugin_foa_detect.FoaDetect import FoaDetect
+from sample.src_references.plugin_gm_serialize.GMSerialize import GMSerialize
 from sample.src_references.plugin_res_convert.ResConvert import ResConvert
 from sample.src_references.plugin_duplicate_detect.DetectDuplicate import DetectDuplicate
 from sample.src_references.plugin_debug_analysis.DebugAnalysis import DebugAnalysis
@@ -41,8 +42,11 @@ def main(paraVo):
     elif opt == 'DEBUG_ANALYSIS':
         debuganalysis = DebugAnalysis(paraVo)
         return debuganalysis.main()
+    elif opt == 'GM_SERIALIZE':
+        gmserialize = GMSerialize(paraVo)
+        return gmserialize.main()
     else:
-        print('不支持的操作类型%s' % opt)
+        print('没有找到此工具:%s' % opt)
 
 def initManagers(paraVo):
     KBMgr()

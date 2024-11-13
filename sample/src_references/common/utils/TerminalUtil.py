@@ -1,124 +1,147 @@
-import logging
 import subprocess
 from pathlib import Path
-import pyperclip
-import sys
 import os
+import pyperclip
 
-def Popen(cmd, arg, callback=None):
-    print("run %s with %s" %(cmd,arg))
-
-    with subprocess.Popen(cmd + ' ' + arg, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
-        try:
-            while p.poll() is None:
-                line = p.stdout.readline().strip()
-                print(line)
-
-            print('Execution Finished')
-            if callback:callback()
-        except OSError as e:  # Including KeyboardInterrupt, wait handled that.
-            print("Execution Failed:", e, file=sys.stderr)
-
-
-def runSvnCommand(args, logger=None, expected_errors=None):
-    """通用 SVN 命令执行函数，允许预期的错误"""
+def run_command(cmd_args, callback=None, cwd=None):
+    """
+    运行命令并实时打印输出。
+    cmd_args 可以是字符串（命令）或列表（命令及参数）。
+    返回 (output, error)，其中 output 是命令输出，error 是错误信息。
+    """
     try:
-        # 将命令和参数记录到日志中
+        if isinstance(cmd_args, list):
+            process = subprocess.Popen(
+                cmd_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=cwd  # 指定工作目录
+            )
+        else:
+            process = subprocess.Popen(
+                cmd_args,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                cwd=cwd  # 指定工作目录
+            )
+
+        output_lines = []
+
+        # 实时读取输出
+        for line in process.stdout:
+            line = line.strip()
+            print(line)
+            output_lines.append(line)
+
+        # 等待进程结束
+        process.wait()
+
+        # 触发回调函数（如果有）
+        if callback:
+            callback()
+
+        # 检查返回码
+        if process.returncode != 0:
+            return None, '\n'.join(output_lines)
+        else:
+            return '\n'.join(output_lines), None
+
+    except Exception as e:
+        return None, f"执行失败: {e}"
+
+def run_svn_command(args, logger=None, expected_errors=None):
+    """
+    通用 SVN 命令执行函数，允许预期的错误。
+    """
+    try:
         command_str = ' '.join(args)
 
-        # if logger:
-        #     logger.debug(f"执行 SVN 命令: {command_str}")
-
-        result = subprocess.run(args, shell=True, capture_output=True, text=True)
+        # 运行 SVN 命令
+        result = subprocess.run(args, capture_output=True, text=True)
 
         if result.returncode != 0:
             error_msg = result.stderr.strip()
 
-            # 检查错误信息是否属于预期的错误
+            # 检查是否为预期的错误
             if expected_errors and any(err in error_msg for err in expected_errors):
-                # if logger:
-                #     logger.info(f"预期的 SVN 错误: {error_msg}，命令: {command_str}")
-                return None  # 预期错误时返回 None，但不记录为失败
+                if logger:
+                    logger.info(f"预期的 SVN 错误: {error_msg}，命令: {command_str}")
+                return None  # 预期错误不视为失败
 
-            # 未预期的错误，记录为 CRITICAL
+            # 未预期的错误
             if logger:
                 logger.critical(f"SVN 命令执行失败: {error_msg}，命令: {command_str}")
             return None
 
         return result.stdout.splitlines()  # 返回命令输出
+
     except Exception as e:
         if logger:
             logger.error(f"执行 SVN 命令时发生异常: {e}，命令: {command_str}")
         return None
 
 
-def run(cmd, arg, callback=None):
-    print(f"run {cmd} with {arg}")
-    with subprocess.Popen(cmd + ' ' + arg, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
-        try:
-            while p.poll() is None:
-                line = p.stdout.readline().strip()
-                print(line.decode('utf-8') if isinstance(line, bytes) else line)
-
-            print('Execution Finished')
-            if callback:
-                callback()
-        except OSError as e:  # Including KeyboardInterrupt, wait handled that.
-            print("Execution Failed:", e, file=sys.stderr)
+def call_script(bat_path):
+    """
+    运行指定的批处理脚本。
+    """
+    print(f"运行脚本: {bat_path}")
+    subprocess.run(bat_path, shell=True)
 
 
-def call(bat_path):
-    print(f"run {bat_path} with")
-    subprocess.call(bat_path, shell=True)
+def clipboard_copy(text):
+    """
+    将文本复制到剪贴板。
+    """
+    pyperclip.copy(text)
 
 
-def ClipboardCopy(str):
-    pyperclip.copy(str)
-
-
-def ClipboardPaste():
+def clipboard_paste():
+    """
+    从剪贴板粘贴文本。
+    """
     return pyperclip.paste()
 
 
 def check_lua_syntax(file_path):
+    """
+    检查单个 Lua 文件的语法。
+    """
     try:
-        # 使用as_posix()确保路径为POSIX风格（即使在Windows上也使用/分隔符）
-        file_path = Path(file_path).as_posix()
         result = subprocess.run(['luac', '-p', file_path], capture_output=True, text=True)
         if result.returncode != 0:
-            return False, result.stderr
+            return False, result.stderr.strip()
         return True, ""
     except Exception as e:
         return False, str(e)
 
 
 def check_code_syntax(code_path):
+    """
+    检查指定路径下所有 Lua 文件的语法。
+    """
+    code_path = Path(code_path)
     non_compliant_files = []
-    code_path = Path(code_path)  # 使用Path处理
-    for root, dirs, files in os.walk(code_path):
-        for file in files:
-            if file.endswith('.lua'):
-                # 使用Path来处理路径，并转换为POSIX风格
-                file_path = Path(root) / file
-                file_path = file_path.resolve().as_posix()  # 转换为绝对路径并使用POSIX分隔符
 
-                is_valid, error_message = check_lua_syntax(file_path)
-                if not is_valid:
-                    non_compliant_files.append((file_path, error_message))
+    for file_path in code_path.rglob('*.lua'):
+        is_valid, error_message = check_lua_syntax(str(file_path))
+        if not is_valid:
+            non_compliant_files.append((str(file_path), error_message))
 
     if non_compliant_files:
         return False, non_compliant_files
     return True, []
 
 
-def openInExplorer(file_path):
+def open_in_explorer(file_path):
     """
     使用 Windows 资源管理器打开并选中指定的文件。
     """
-    # 需要将路径中的特殊字符进行转义，以确保路径正确
-    file_path = os.path.abspath(file_path).replace('/', '\\')
+    file_path = os.path.abspath(file_path)
     try:
-        # 使用 explorer 命令打开文件资源管理器并选中指定文件
-        subprocess.Popen(f'explorer /select,"{file_path}"', shell=True)
+        subprocess.run(f'explorer /select,"{file_path}"', shell=True)
     except Exception as e:
         return False, f"无法打开文件资源管理器: {str(e)}"

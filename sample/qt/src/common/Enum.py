@@ -7,6 +7,7 @@ ENUM_OPT = {
     "RES_NAMING" : "RES_NAMING",
     "FOA_DETECT" : "FOA_DETECT",
     "DEBUG_ANALYSIS" : "DEBUG_ANALYSIS",
+    "GM_SERIALIZE" : "GM_SERIALIZE",
 }
 
 ENUM_OPT_LANG = {
@@ -18,6 +19,7 @@ ENUM_OPT_LANG = {
     "RES_NAMING" : "资源命名",
     "FOA_DETECT" : "FOA检测",
     "DEBUG_ANALYSIS" : "日志分析",
+    "GM_SERIALIZE" : "GM序列化",
 }
 
 ENUM_OPT_QTUI = {
@@ -29,4 +31,5 @@ ENUM_OPT_QTUI = {
     "DETECT_DUPLICATE_FILES" : "DetectDuplicateFilesWidget",
     "FOA_DETECT" : "FoaDetectWidget",
     "DEBUG_ANALYSIS" : "DebugAnalysisWidget",
+    "GM_SERIALIZE" : "GMSerializeWidget",
 }

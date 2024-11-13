@@ -19,13 +19,21 @@ class FoaDetect:
         try:
             command = [
                 str(Path(self.workPath) / 'fancy3d-foa-tool.exe'),
-                str(f"foa/{name}"),
+                f"foa/{name}",
                 "grouplist.txt"
             ]
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("Running command: %s", ' '.join(command))
-            return TerminalUtil.run(command, callback)
+            logger = G.getG('LogMgr').getLogger(self._uniqueKey)
+            logger.info("运行命令: %s", ' '.join(command))
+
+            output, error = TerminalUtil.run_command(command, callback)
+            if error:
+                logger.error("命令执行失败: %s", error)
+            else:
+                logger.info("命令执行成功")
+            return output, error
         except Exception as e:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("Failed to execute command: %s", e)
+            logger = G.getG('LogMgr').getLogger(self._uniqueKey)
+            logger.error("执行命令时发生异常: %s", e)
             return None, str(e)
 
     def dealAllFoas(self, inPath, outPath):

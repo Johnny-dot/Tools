@@ -75,3 +75,6 @@ CMakeLists.txt.user*
 /sample/environment/import_foa_build_old/build/temp
 /sample/environment/import_foa_build_old/mclient/XA
 /venv
+/sample/log/241113/FOA_BUILD/*.log
+/sample/log/241113/GM_SERIALIZE/*.log
+/sample/log/241113/RES_CONVERT/*.log

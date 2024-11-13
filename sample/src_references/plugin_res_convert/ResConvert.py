@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import sample.src_references.common.g.G as G
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 import sample.src_references.common.utils.FileUtil as FileUtil
@@ -12,19 +14,25 @@ class ResConvert:
         cfg = JsonUtil.readCfg()
         self.workPath = cfg.get("environment").get('resConvert')
 
-    # @resUrl #文件 or 文件夹
     def convertEtc(self):
-        # exePath = 
-        cmd = 'start ' + self.workPath + '/fancy-dev.exe'
-        arg = '-d Etc.lua'
-        # arg = '-d android_etc.lua'
-        TerminalUtil.Popen(cmd, arg)
-        
+        cmd = str(Path(self.workPath) / 'fancy-dev.exe')
+        args = ['-d', 'Etc.lua']  # 如果需要使用 "android_etc.lua"，请更改为 'android_etc.lua'
+        command = [cmd] + args
+        output, error = TerminalUtil.run_command(command)
+        if error:
+            print(f"执行失败: {error}")
+        else:
+            print("执行成功")
 
     def convertPvr(self):
-        arg = '-d Pvr.lua'
-        cmd = 'start ' + self.workPath + '/fancy-dev.exe'
-        TerminalUtil.Popen(cmd, arg)
+        cmd = str(Path(self.workPath) / 'fancy-dev.exe')
+        args = ['-d', 'Pvr.lua']
+        command = [cmd] + args
+        output, error = TerminalUtil.run_command(command)
+        if error:
+            print(f"执行失败: {error}")
+        else:
+            print("执行成功")
 
     def getFolderName(self):
         platform = self.vo.getVal('platform')

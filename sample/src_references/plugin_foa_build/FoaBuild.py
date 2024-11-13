@@ -267,7 +267,7 @@ class FoaBuild:
         inPath = os.path.abspath(self.workPath)
         cmd = os.path.join(inPath, "temp.bat")
         try:
-            TerminalUtil.call(cmd)
+            TerminalUtil.call_script(cmd)
         except Exception as e:
             G.getG('LogMgr').getLogger(self._uniqueKey).error(f"Error during build: {str(e)}")
 
