@@ -40,10 +40,10 @@ FOA_BUILD_VO = {
 
 # 所有分支的SVN库链接
 ALL_BRANCHES_REPO = {
-    "devA":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/devA",
-    "devB":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/devB",
-    "tagA":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/tagA",
-    "trunk":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/trunk"
+    "devA":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/devA/XA",
+    "devB":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/devB/XA",
+    "tagA":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/tagA/XA",
+    "trunk":"http://devsvn.uuzuonline.net/redgold_oversea_182/Game/trunk/XA"
 }
 
 ALL_PLATFORM = {

@@ -388,7 +388,7 @@ archive:addPreGroup('pregroup'..i)
 end]]
 -- _G.cache.createCache(respath,"./XA")
 archive.compressMode = _Archive.Compress7z
-local name = "rghw"
+local name = "rg_foa"
 local foaNameFont = out .. '/' .. name .. '_' .. version
 archive:save(foaNameFont .. '.text', foaNameFont .. '.txt', "6a7bf9ad539301d1795155eca6425e7f")
 -- deleFolder("XA/code")

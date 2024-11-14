@@ -97,7 +97,7 @@ class DetectDuplicateFilesWidget(QWidget):
             current_item = self.ui.listWidget_processed.currentItem()
             if current_item:
                 file_path = current_item.data(Qt.UserRole)
-                success, message = TerminalUtil.openInExplorer(file_path)
+                success, message = TerminalUtil.open_in_explorer(file_path)
                 if not success:
                     QMessageBox.warning(self, "打开文件", message)
 

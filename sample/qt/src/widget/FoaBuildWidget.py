@@ -33,8 +33,6 @@ class FoaBuildWidget(QWidget):
         self.initFoaPage()
         self._uniqueKey = uniqueKey
         self._snapshotPath = None
-        self._outPath1 = None
-        self._outPath2 = None
         self.paraVo = None
         self.batchBuildDialog = None  # 初始化批量构建对话框
         G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
@@ -71,8 +69,7 @@ class FoaBuildWidget(QWidget):
         self.ui.comboBox_snapshot.lineEdit().setAlignment(Qt.AlignRight)
 
         # 处理输出路径的变化
-        self.ui.lineEdit_outPath1.textChanged.connect(self.onOutPathChanged)
-        self.ui.lineEdit_outPath2.textChanged.connect(self.onOutPathChanged)
+
         self.ui.toolButton_outPath1.clicked.connect(self.onClickOutPath)
         self.ui.toolButton_outPath2.clicked.connect(self.onClickOutPath)
 
@@ -94,15 +91,6 @@ class FoaBuildWidget(QWidget):
                 self.batchBuildDialog.close()
                 self.batchBuildDialog = None
 
-    def onOutPathChanged(self):
-        """当输出路径文本变化时更新输出路径。"""
-        sender = self.sender()
-        if sender == self.ui.lineEdit_outPath1:
-            self._outPath1 = self.ui.lineEdit_outPath1.text()
-        elif sender == self.ui.lineEdit_outPath2:
-            self._outPath2 = self.ui.lineEdit_outPath2.text()
-        self.syncSnapshotCfg()
-
     def onClickOutPath(self):
         """处理输出路径按钮的点击事件。"""
         sender = self.sender()
@@ -110,12 +98,9 @@ class FoaBuildWidget(QWidget):
         if not outPath:
             return
         if sender == self.ui.toolButton_outPath1:
-            self._outPath1 = outPath
             self.ui.lineEdit_outPath1.setText(outPath)
         elif sender == self.ui.toolButton_outPath2:
-            self._outPath2 = outPath
             self.ui.lineEdit_outPath2.setText(outPath)
-        self.syncSnapshotCfg()
 
     def onSnapshotPathChanged(self):
         """当快照路径选择变化时更新快照路径。"""
@@ -153,8 +138,6 @@ class FoaBuildWidget(QWidget):
         binding_info = snapshot_binding.get(branch) or {}
         binding_info['check'] = self.ui.radioButton_snapshot.isChecked()
         binding_info[f'snapshot_{platform}'] = self._snapshotPath
-        binding_info['foa_outpath1'] = self.ui.lineEdit_outPath1.text()
-        binding_info['foa_outpath2'] = self.ui.lineEdit_outPath2.text()
         snapshot_binding[branch] = binding_info
         JsonUtil.saveInCfg('snapshot_binding', snapshot_binding)
 
@@ -250,10 +233,15 @@ class FoaBuildWidget(QWidget):
         name = self.ui.comboBox_quicParas.currentText()
         if not name:
             QMessageBox.warning(self, "同步失败", "请先添加一条快速参数。")
+        elif name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
+            # 线上方案不能修改
+            # and_hwzs、and_ajmzs、and_hwzs64、ios_ajmzs、ios_hwzs、mclient
+            QMessageBox.warning(self, "同步失败", "线上方案不能修改。")
         else:
             para_dict = self.getBuildDict()
             self.paraVo = ToolsMain.inputByDict(para_dict)
             JsonUtil.saveIn(JsonUtil.PARAS, name, self.paraVo.getAll())
+            QMessageBox.information(self, "同步成功", "快速参数同步成功。")
 
     def onClickQuicParasDel(self):
         """处理删除快速参数的点击事件。"""
@@ -310,12 +298,8 @@ class FoaBuildWidget(QWidget):
                 index = self.ui.comboBox_snapshot.currentIndex()
                 self._snapshotPath = self.ui.comboBox_snapshot.itemData(index, Qt.UserRole)
 
-            self.ui.lineEdit_outPath1.setText(binding_info.get('foa_outpath1', ''))
-            self.ui.lineEdit_outPath2.setText(binding_info.get('foa_outpath2', ''))
         else:
             self.ui.radioButton_snapshot.setChecked(False)
-            self.ui.lineEdit_outPath1.clear()
-            self.ui.lineEdit_outPath2.clear()
             self.ui.comboBox_snapshot.clear()
             self._snapshotPath = None
 
@@ -379,6 +363,9 @@ class FoaBuildWidget(QWidget):
         self.ui.comboBox_platform.setCurrentText(buildDict.get('platform', FOA_BUILD_VO['platform']))
         self.ui.comboBox_is64.setCurrentText(StringUtil.Py2LuaBool(buildDict.get('is64', FOA_BUILD_VO['is64'])))
 
+        self.ui.lineEdit_outPath1.setText(buildDict.get('outPath1', ''))
+        self.ui.lineEdit_outPath2.setText(buildDict.get('outPath2', ''))
+
     def getBuildDict(self):
         """从UI收集构建参数到字典中。"""
         buildDict = {
@@ -392,8 +379,8 @@ class FoaBuildWidget(QWidget):
             'tag': self.ui.lineEdit_channel.text(),
             'res_target': self.ui.lineEdit_targetRes.text() or None,
             'snapshotPath': self._snapshotPath,
-            'outPath1': self._outPath1,
-            'outPath2': self._outPath2,
+            'outPath1': self.ui.lineEdit_outPath1.text(),
+            'outPath2': self.ui.lineEdit_outPath2.text(),
             'isdebug': StringUtil.Lua2PyBool(self.ui.comboBox_isDebug.currentText()),
             'sandbox': StringUtil.Lua2PyBool(self.ui.comboBox_sandBox.currentText()),
             'use_localserverlist': StringUtil.Lua2PyBool(self.ui.comboBox_useLocals.currentText()),
@@ -540,6 +527,6 @@ class FoaBuildWidget(QWidget):
             return
         menu = QMenu()
         action_open_in_explorer = QAction("在文件资源管理器中显示", self)
-        action_open_in_explorer.triggered.connect(lambda: TerminalUtil.openInExplorer(file_path))
+        action_open_in_explorer.triggered.connect(lambda: TerminalUtil.open_in_explorer(file_path))
         menu.addAction(action_open_in_explorer)
         menu.exec_(QCursor.pos())
