@@ -5,7 +5,7 @@ import sample.src_references.common.utils.TerminalUtil as TerminalUtil
 def check_connection(repository_url, logger=None):
     """检查 SVN 仓库连接是否可用"""
     args = ["svn", "info", repository_url]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
     if result:
         logger.info(f"连接到 {repository_url} 成功。") if logger else print(f"连接到 {repository_url} 成功。")
         return True
@@ -17,7 +17,7 @@ def check_connection(repository_url, logger=None):
 def getSvnInfo(item, repositoryUrl, logger=None):
     """获取 SVN 信息"""
     args = ["svn", "info", "--show-item", item, repositoryUrl]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
     if result:
         return result[0]
     return None
@@ -26,7 +26,7 @@ def getSvnInfo(item, repositoryUrl, logger=None):
 def updateSvn(repoPath, logger=None):
     """更新 SVN 仓库"""
     args = ["svn", "update", repoPath]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
     if result:
         return True
     return False
@@ -35,7 +35,7 @@ def updateSvn(repoPath, logger=None):
 def commitSvn(repoPath, message, logger=None):
     """提交文件到 SVN 仓库"""
     args = ["svn", "commit", repoPath, "-m", message]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
     if result:
         logger.info(f"成功提交: {message}") if logger else print(f"成功提交: {message}")
         return True
@@ -47,11 +47,11 @@ def checkoutOrUpdate(repository_url, checkout_directory, logger=None):
     if os.path.exists(checkout_directory) and os.path.isdir(checkout_directory):
         logger.info(f"更新 {checkout_directory} 来自 {repository_url}") if logger else print(f"更新 {checkout_directory} 来自 {repository_url}")
         args = ["svn", "update", checkout_directory]
-        return TerminalUtil.runSvnCommand(args, logger) is not None
+        return TerminalUtil.run_svn_command(args, logger) is not None
     else:
         logger.info(f"检出 {repository_url} 到 {checkout_directory}") if logger else print(f"检出 {repository_url} 到 {checkout_directory}")
         args = ["svn", "checkout", repository_url, checkout_directory]
-        return TerminalUtil.runSvnCommand(args, logger) is not None
+        return TerminalUtil.run_svn_command(args, logger) is not None
 
 
 def isUnderVersionControl(path, logger=None):
@@ -65,7 +65,7 @@ def isUnderVersionControl(path, logger=None):
     # 预期的错误是文件未被版本控制
     expected_errors = ["W155010", "The node was not found"]
     args = ["svn", "info", path]
-    result = TerminalUtil.runSvnCommand(args, logger, expected_errors=expected_errors)
+    result = TerminalUtil.run_svn_command(args, logger, expected_errors=expected_errors)
 
     if result is None:
         # 文件未被版本控制，返回 False
@@ -81,7 +81,7 @@ def addToSvn(path, logger=None):
     if os.path.isfile(path) or os.path.isdir(path):
         if not isUnderVersionControl(path, logger):
             args = ["svn", "add", path, "--force"]
-            result = TerminalUtil.runSvnCommand(args, logger)
+            result = TerminalUtil.run_svn_command(args, logger)
             if result:
                 logger.info(f"添加 {path} 到 SVN 成功。")
             else:
@@ -97,14 +97,14 @@ def resolveConflicts(path, logger=None):
     """解决 SVN 冲突"""
     # 检查是否是有效的 SVN 工作目录
     args_info = ["svn", "info", path]
-    info_result = TerminalUtil.runSvnCommand(args_info, logger)
+    info_result = TerminalUtil.run_svn_command(args_info, logger)
     if not info_result:
         logger.warning(f"路径 {path} 不是有效的 SVN 工作目录，或者 SVN 仓库连接有问题。")
         return
 
     # 获取冲突的文件列表
     args = ["svn", "status", path]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
 
     if result is None:
         logger.info("SVN 状态为空，表示没有冲突或未提交的改动。")
@@ -119,7 +119,7 @@ def resolveConflicts(path, logger=None):
             conflict_path = line[8:].strip()
             # 解决冲突，使用 'theirs-full' 策略
             args_resolve = ["svn", "resolve", "--accept", "theirs-full", conflict_path]
-            resolve_result = TerminalUtil.runSvnCommand(args_resolve, logger)
+            resolve_result = TerminalUtil.run_svn_command(args_resolve, logger)
             if resolve_result:
                 logger.info(f"使用 'theirs-full' 解决了 {conflict_path} 的冲突。")
             else:
@@ -135,7 +135,7 @@ def resolveConflicts(path, logger=None):
 def hasChangesToCommit(path, logger=None):
     """检查是否有改动需要提交"""
     args = ["svn", "status", path]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
     if result:
         for line in result:
             if line and line[0] in ['A', 'M', 'D', '?']:
@@ -146,7 +146,7 @@ def hasChangesToCommit(path, logger=None):
 def getSvnLog(repository_url, num, logger=None):
     """获取 SVN 日志"""
     args = ["svn", "log", repository_url, "-l", str(num)]
-    result = TerminalUtil.runSvnCommand(args, logger)
+    result = TerminalUtil.run_svn_command(args, logger)
 
     if result:
         logs = []

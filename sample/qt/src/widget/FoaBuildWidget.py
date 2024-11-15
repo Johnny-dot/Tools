@@ -228,12 +228,12 @@ class FoaBuildWidget(QWidget):
         para_vo = JsonUtil.readIn(JsonUtil.PARAS, name)
         self.setBuildView(para_vo)
 
-    def onClickQuicParasSync(self):
+    def onClickQuicParasSync(self, force=False):
         """同步快速参数。"""
         name = self.ui.comboBox_quicParas.currentText()
         if not name:
             QMessageBox.warning(self, "同步失败", "请先添加一条快速参数。")
-        elif name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
+        elif not force and name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
             # 线上方案不能修改
             # and_hwzs、and_ajmzs、and_hwzs64、ios_ajmzs、ios_hwzs、mclient
             QMessageBox.warning(self, "同步失败", "线上方案不能修改。")
@@ -241,7 +241,8 @@ class FoaBuildWidget(QWidget):
             para_dict = self.getBuildDict()
             self.paraVo = ToolsMain.inputByDict(para_dict)
             JsonUtil.saveIn(JsonUtil.PARAS, name, self.paraVo.getAll())
-            QMessageBox.information(self, "同步成功", "快速参数同步成功。")
+            if not force:
+                QMessageBox.information(self, "同步成功", "快速参数同步成功。")
 
     def onClickQuicParasDel(self):
         """处理删除快速参数的点击事件。"""
@@ -415,7 +416,7 @@ class FoaBuildWidget(QWidget):
                 new_sysversion = '.'.join(version_parts)
                 self.ui.lineEdit_sysversion.setText(new_sysversion)
                 G.getG('LogMgr').getLogger(self._uniqueKey).info(f"自动递增版本号成功，新版本号：{new_sysversion}")
-                self.onClickQuicParasSync()
+                self.onClickQuicParasSync(force=True)
             else:
                 print("sysversion格式不正确")
         else:

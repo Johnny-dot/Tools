@@ -213,7 +213,6 @@ class FoaBuild:
     def getBat(self, php):
         if self.vo.getVal_Lua("tag") == 'mclient':
             version_code = (
-                f"cd {self.workPath}\n"
                 f"php package.php bigversion={self.vo.getVal_Lua('bigversion')} "
                 f"platform={self.vo.getVal_Lua('platform')} tag={self.vo.getVal_Lua('tag')} "
                 f"use_localserverlist={self.vo.getVal_Lua('use_localserverlist')} "
@@ -223,7 +222,6 @@ class FoaBuild:
             return version_code
         elif str(self.vo.getVal_Lua("is64")) in ['false', 'true']:
             version_code = (
-                f"cd {self.workPath}\n"
                 f"php {php} toapple={self.vo.getVal_Lua('isAppleStoreReview')} istoiran={self.vo.getVal_Lua('istoiran')} "
                 f"platform={self.vo.getVal_Lua('platform')} bigversion={self.vo.getVal_Lua('bigversion')} sandbox={self.vo.getVal_Lua('sandbox')} "
                 f"isdebug={self.vo.getVal_Lua('isdebug')} tag={self.vo.getVal_Lua('tag')} testapp={self.vo.getVal_Lua('istestapp')} "
@@ -235,13 +233,12 @@ class FoaBuild:
         else:
             pathfc = 'fancy-dev.cfg'
             version_code = (
-                f"cd {self.workPath}\ndel %cd%\\{pathfc}\necho build.lua -d>%cd%\\{pathfc}\nphp {php} "
+                f"del %cd%\\{pathfc}\necho build.lua -d>%cd%\\{pathfc}\nphp {php} "
                 f"platform={self.vo.getVal_Lua('platform')} isdebug={self.vo.getVal_Lua('isdebug')} "
                 f"bigversion={self.vo.getVal_Lua('bigversion')} tag={self.vo.getVal_Lua('tag')} "
                 f"lang=zh use_sdk={self.vo.getVal_Lua('use_sdk')} "
                 f"use_localserverlist={self.vo.getVal_Lua('use_localserverlist')} toapple=false "
                 f"path={self.XAUrl} flag=old svnnumber={self.svnNumber} nowtime={self._uniqueKey.split('-')[1]} "
-
             )
             return version_code
 
@@ -265,11 +262,14 @@ class FoaBuild:
     # 执行打包指令
     def build(self):
         inPath = os.path.abspath(self.workPath)
-        cmd = os.path.join(inPath, "temp.bat")
-        try:
-            TerminalUtil.call_script(cmd)
-        except Exception as e:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error(f"Error during build: {str(e)}")
+        bat_out_path = os.path.join(inPath, "temp.bat")
+        cwd = self.workPath
+        # 使用 run_command 来执行打包命令，并传递工作目录 cwd
+        output, error = TerminalUtil.run_command(bat_out_path, cwd=cwd)
+        if error:
+            G.getG('LogMgr').getLogger(self._uniqueKey).error(f"Error during build: {error}")
+        else:
+            G.getG('LogMgr').getLogger(self._uniqueKey).info(f"Build output: {output}")
 
     def getFoaDetectVO(self):
         sourceItems = {}
