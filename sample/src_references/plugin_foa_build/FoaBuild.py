@@ -332,10 +332,10 @@ class FoaBuild:
             {"msg": '检测代码是否合规', 'rate': 0.1},
             {"msg": '自动转换资源', 'rate': 0.2},
             {"msg": '生成打包配置', 'rate': 0.1},
-            {"msg": '执行打包命令', 'rate': 0.2},
+            {"msg": '执行打包命令', 'rate': 0.3},
             {"msg": '校验FOA是否合规', 'rate': 0.1},
             {"msg": '转移FOA至outpath', 'rate': 0.1},
-            {"msg": '清理临时文件', 'rate': 0.1}
+            # {"msg": '清理临时文件', 'rate': 0.1}
         ]
 
         # 注册进度条
@@ -379,7 +379,7 @@ class FoaBuild:
 
         # 构建完成
         # self.cleanTemp()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 7)
+        # self.kbMgr.onProgressUpdated(self._uniqueKey, 7)
         # G.getG('LogMgr').getLogger(self._uniqueKey).info("清理临时文件完成")
 
         return foaErrors, True

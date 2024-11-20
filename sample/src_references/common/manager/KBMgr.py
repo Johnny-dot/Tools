@@ -1,5 +1,4 @@
 from sample.src_references.common.manager.Manager import Manager
-import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 
 import threading
@@ -19,6 +18,7 @@ def Singleton(cls):
 
 @Singleton
 class KBMgr(Manager):
+
     def __init__(self) -> None:
         super().__init__()
         self.branchesUrl = {}
@@ -39,14 +39,6 @@ class KBMgr(Manager):
         branches = JsonUtil.readInCfg("branches") or {}
         path = branches.get(name)
         return path
-        # if name not in self.branchesUrl:
-            # if path:
-            #     return path
-        #     else:
-        #         url = InputUtil.InPutDirectory()
-        #         JsonUtil.saveInCfg(name, url)
-        #     self.setBranchUrl(name, url)
-        # return self.branchesUrl[name]
 
     # 进度条
     def addGUIProCallback(self, progressCallback):
@@ -57,14 +49,17 @@ class KBMgr(Manager):
         self._proListCallback = proListCallback
 
     def registerProgress(self, uniqueKey, stages):
+        if uniqueKey in self._threads and self._threads[uniqueKey].is_alive():
+            print(f"线程已存在，跳过注册: {uniqueKey}")
+            return
+
         if not self._progress.get(uniqueKey):
-            # 初始化每个阶段的percent为0
             for stage in stages:
                 stage['percent'] = 0
             self._progress[uniqueKey] = stages
-            # self._running[uniqueKey] = True
-            # self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
-            # self._threads[uniqueKey].start()
+            self._running[uniqueKey] = True
+            self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
+            self._threads[uniqueKey].start()
         else:
             print(uniqueKey, '重复的进度id')
 
@@ -77,15 +72,15 @@ class KBMgr(Manager):
             self._proListCallback(stages[index]['msg'])
 
         # 启动下一个阶段的假进度更新
-        # if index < len(stages) - 1:
-        #     self._running[uniqueKey] = True
-        #     self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
-        #     self._threads[uniqueKey].start()
-        # else:
-        #     self._running[uniqueKey] = False
-        #     # 确保在最后一个阶段完成后，进度为100%
-        #     if self._progressCallback:
-        #         self._progressCallback(100)
+        if index < len(stages) - 1:
+            self._running[uniqueKey] = True
+            self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
+            self._threads[uniqueKey].start()
+        else:
+            self._running[uniqueKey] = False
+            # 确保在最后一个阶段完成后，进度为100%
+            if self._progressCallback:
+                self._progressCallback(100)
 
     def getProgressNum(self, uniqueKey):
         stages = self.getProgress(uniqueKey) or []
@@ -106,15 +101,28 @@ class KBMgr(Manager):
     def _simulateProgress(self, uniqueKey):
         stages = self.getProgress(uniqueKey)
         current_index = 0
+
         while self._running[uniqueKey] and current_index < len(stages):
             stage = stages[current_index]
+
+            # 动态计算 target_rate
             target_rate = stage['rate'] + self.getProgressNum(uniqueKey) - sum(
-                s['percent'] for s in stages[:current_index])
+                s['percent'] for s in stages[:current_index]
+            )
+
             start_time = time.time()
-            while self._running[uniqueKey] and stage['percent'] < stage['rate']:
-                stage['percent'] = min(stage['rate'], stage['percent'] + 0.01)
+            while self._running[uniqueKey] and stage['percent'] < target_rate:
+                # 更新阶段百分比，目标为 target_rate
+                stage['percent'] = min(target_rate, stage['percent'] + 0.01)
+
+                # 更新进度条回调
                 if self._progressCallback:
                     self._progressCallback(self.getProgressNum(uniqueKey))
+
+                # 更新进度列表回调
+                if self._proListCallback:
+                    self._proListCallback(stage['msg'])
+
                 time.sleep(0.1)
 
             # 确保每个阶段至少运行 _min_duration 秒
