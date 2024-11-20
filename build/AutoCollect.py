@@ -1,6 +1,7 @@
 import pkgutil
 import os
 import re
+from PyInstaller.utils.hooks import collect_submodules
 
 # 获取项目根目录路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -10,12 +11,16 @@ project_root = os.path.abspath(os.path.join(current_dir, "../"))
 venv_path = os.path.join(project_root, 'venv')
 spec_file = os.path.join(current_dir, 'mainwindow.spec')
 
-# 获取所有已安装的包的名称
-def get_installed_packages(venv_path):
+# 获取所有已安装的包的名称，包括项目目录
+def get_installed_packages(venv_path, project_root):
     packages = []
-    site_packages_path = os.path.join(venv_path, 'Lib', 'site-packages')
-    for _, name, _ in pkgutil.iter_modules([site_packages_path]):
-        packages.append(name)
+    search_paths = [
+        os.path.join(venv_path, 'Lib', 'site-packages'),
+        project_root  # 添加项目根目录到搜索路径
+    ]
+    for search_path in search_paths:
+        for _, name, _ in pkgutil.iter_modules([search_path]):
+            packages.append(name)
     return packages
 
 # 修改 .spec 文件中的 hiddenimports
@@ -80,8 +85,22 @@ def get_datas_without_ui(source_dir, target_dir):
                 datas.append((src_file, dest_dir))
     return datas
 
-# 获取所有安装的包
-hidden_imports = get_installed_packages(venv_path)
+# 获取所有安装的包，包括项目目录
+hidden_imports = get_installed_packages(venv_path, project_root)
+
+# # 显式添加 tkinter
+# hidden_imports.append('tkinter')
+# 显式添加 tkinter 及其子模块
+hidden_imports.append('tkinter')
+hidden_imports.append('tkinter.filedialog')
+hidden_imports.append('tkinter.simpledialog')
+hidden_imports.append('tkinter.messagebox')
+hidden_imports.append('tkinter.ttk')
+hidden_imports.append('tkinter.scrolledtext')
+
+
+# 收集 sample.src_references 的所有子模块
+hidden_imports += collect_submodules('sample.src_references')
 
 # 更新 .spec 文件中的 hiddenimports
 update_hiddenimports_in_spec_file(spec_file, hidden_imports)
