@@ -7,8 +7,11 @@ a = Analysis(
     binaries=[],
     datas=[
     ('E:/kuangbao/Tools2/sample/qt/res/KBTools.ico', 'sample/qt/res'),
+    ('E:/kuangbao/Tools2/sample/qt/src/mainwindow.ui.autosave', 'sample/qt/src'),
     ('E:/kuangbao/Tools2/sample/qt/src/ui_mainwindow.py', 'sample/qt/src'),
+    ('E:/kuangbao/Tools2/sample/qt/src/common/AdminAuthManager.py', 'sample/qt/src/common'),
     ('E:/kuangbao/Tools2/sample/qt/src/common/Enum.py', 'sample/qt/src/common'),
+    ('E:/kuangbao/Tools2/sample/qt/src/common/__pycache__/AdminAuthManager.cpython-39.pyc', 'sample/qt/src/common/__pycache__'),
     ('E:/kuangbao/Tools2/sample/qt/src/common/__pycache__/Enum.cpython-39.pyc', 'sample/qt/src/common/__pycache__'),
     ('E:/kuangbao/Tools2/sample/qt/src/common/__pycache__/Worker.cpython-39.pyc', 'sample/qt/src/common/__pycache__'),
     ('E:/kuangbao/Tools2/sample/qt/src/pyui/BatchBuildDialog.py', 'sample/qt/src/pyui'),

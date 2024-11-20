@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox, QComboBox, QListView, QMenu
 from PySide6.QtGui import QCursor, QAction
 from PySide6.QtCore import Qt
 
+from sample.qt.src.common.AdminAuthManager import AuthManager
 from sample.qt.src.pyui.BatchBuildDialog import BatchBuildDialog
 from sample.qt.src.widget.ui_FoaBuildWidget import Ui_FoaBuildWidget
 from sample.qt.src.widget.QuicParasAddTips import QuicParasAddTips
@@ -233,7 +234,7 @@ class FoaBuildWidget(QWidget):
         name = self.ui.comboBox_quicParas.currentText()
         if not name:
             QMessageBox.warning(self, "同步失败", "请先添加一条快速参数。")
-        elif not force and name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
+        elif not AuthManager.is_admin_authenticated() and name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
             # 线上方案不能修改
             # and_hwzs、and_ajmzs、and_hwzs64、ios_ajmzs、ios_hwzs、mclient
             QMessageBox.warning(self, "同步失败", "线上方案不能修改。")

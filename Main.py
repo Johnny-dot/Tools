@@ -7,18 +7,18 @@ from pathlib import Path
 
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt, QThread, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
 
 from sample.qt.src.common import Enum
 import sample.src_references.common.g.G as G
 import sample.src_references.common.utils.StringUtil as StringUtil
+from sample.qt.src.common.AdminAuthManager import AuthManager
 
 from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.manager.KBMgr import KBMgr
 
 from sample.qt.src.ui_mainwindow import Ui_MainWindow
 from sample.qt.src.pyui.QTextEditLogger import QTextEditLogger
-from sample.qt.src.pyui.GridProgressBar import GridProgressBar
 from sample.src_references.common.utils import TerminalUtil
 
 ENUM_OPT_LANG = Enum.ENUM_OPT_LANG
@@ -97,6 +97,15 @@ class MainWindow(QMainWindow):
         self.ui.lineEdit_logSearch.cursorPositionChanged.connect(self.onLogSearchLineChanged)
         self.ui.comboBox_allLogType.currentIndexChanged.connect(self.onLogTypeChanged)
         self.ui.commandLinkButton_log.clicked.connect(self.onCommandLinkButtonLogClicked)
+        self.ui.action_settting.triggered.connect(self.onActionSettingsTriggered)
+
+    def onActionSettingsTriggered(self):
+        """点击设置按钮后触发的事件"""
+        if not AuthManager.is_admin_authenticated():
+            AuthManager.prompt_admin_access(self)  # 提示进行管理员验证
+        if AuthManager.is_admin_authenticated():
+            QMessageBox.information(self, "管理员权限", "您现在可以执行管理员权限操作！")
+
 
     def onCommandLinkButtonClicked(self):
         try:
