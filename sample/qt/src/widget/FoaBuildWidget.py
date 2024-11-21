@@ -475,7 +475,7 @@ class FoaBuildWidget(QWidget):
 
         # 校验
         branches = self.paraVo.getVal("branches")
-        XA_Url = G.getG("KBMgr").getBranchUrl(branches)
+        XA_Url = KBMgr.getBranchUrl(branches)
         res_target = self.paraVo.getVal("res_target")
         platformRes = f'{XA_Url}/{res_target}'
         if not FolderUtil.exists(platformRes):

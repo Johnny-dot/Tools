@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
 
 from sample.qt.src.common import Enum
@@ -23,43 +23,6 @@ from sample.src_references.common.utils import TerminalUtil
 ENUM_OPT_LANG = Enum.ENUM_OPT_LANG
 ENUM_OPT_QTUI = Enum.ENUM_OPT_QTUI
 
-class LogUpdateThread(QThread):
-    log_updated = Signal(list)
-    search_done = Signal(list)
-
-    def __init__(self, uniqueKey, searchText=None):
-        super().__init__()
-        self.uniqueKey = uniqueKey
-        self.searchText = searchText
-        self._running = True  # 标志变量
-
-    def run(self):
-        if not self.uniqueKey:
-            return
-        log = LogMgr.getLog(self.uniqueKey)
-        buffer = []
-        batch_size = 50  # 调整这个值以控制每批次更新的行数
-
-        if self.searchText:
-            filtered_log = [line for line in log if self.searchText in line]
-            if self._running:
-                self.search_done.emit(filtered_log)
-        else:
-            for line in log:
-                if not self._running:  # 检查是否需要终止线程
-                    break
-                buffer.append(line)
-                if len(buffer) >= batch_size:
-                    self.log_updated.emit(buffer)
-                    buffer = []
-                QThread.msleep(1)  # 减少睡眠时间以提高更新速度
-
-            if buffer:  # 发送剩余的日志
-                self.log_updated.emit(buffer)
-
-    def stop(self):  # 安全停止线程的方法
-        self._running = False
-
 class MainWindow(QMainWindow):
     progress_updated = Signal(int)
     prolist_item_added = Signal(str)
@@ -69,13 +32,15 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.uiWidgets = {}
         self.ui.setupUi(self)
-        self.log_thread = None
+
+        self.log_timer = QTimer(self)  # 用 QTimer 替代线程
+        self.log_timer.timeout.connect(self.updateLogLines)  # 定时器触发更新日志
+        self.log_buffer = []  # 缓存日志的列表
 
         self.progress_updated.connect(self.onProgressBarValueChanged)
         self.prolist_item_added.connect(self.onListWidgetProgressItemAdded)
 
     def initUI(self):
-        LogMgr.setLoggerWidget(widget.ui.textEditLogger)
         self.ui.textEditLogger = QTextEditLogger(self.ui.plainTextEdit_log, self)
         self.ui.plainTextEdit_log.document().setMaximumBlockCount(1000)  # 设置最大显示 1000 行
         self.setWindowTitle('KBTools')
@@ -177,11 +142,12 @@ class MainWindow(QMainWindow):
     def onFuncTabWidgetCurrentChanged(self, index):
         self.ui.label_funcTips.setVisible(index == -1)
         tab = self.ui.tabWidget_allFuncs.currentWidget()
-
         if not hasattr(tab, 'getUniqueKey'):
             uniqueKey = None
         else:
             uniqueKey = tab.getUniqueKey()
+            self.displayUniqueKey = uniqueKey
+
         self.refreshLogger(uniqueKey)
         self.refreshProgress(uniqueKey)
         self.refreshProList(uniqueKey)
@@ -231,37 +197,38 @@ class MainWindow(QMainWindow):
         else:
             type, id = uniqueKey.split('-')
             self.ui.label_curFuncId.setText('TYPE: ' + type + '\nID: ' + id)
-            if self.log_thread:
-                self.log_thread.stop()
-                self.log_thread.wait()
 
-            self.log_thread = LogUpdateThread(uniqueKey)
-            self.log_thread.log_updated.connect(self.appendLogLines)
-            self.log_thread.start()
+            # 每次刷新前清空缓冲区
+            self.log_buffer = []
+
+            # 停止旧的定时器，启动新的
+            self.log_timer.stop()
+            self.log_timer.start(100)  # 每 100ms 更新日志
+
+    def updateLogLines(self):
+        """定时器回调，用于更新日志"""
+        if not self.displayUniqueKey:
+            return
+
+        log = LogMgr.getLog(self.displayUniqueKey)
+        new_lines = log[len(self.log_buffer):]  # 获取新日志
+        self.log_buffer.extend(new_lines)  # 更新缓存
+
+        if new_lines:
+            combined_text = '\n'.join(new_lines)
+            self.ui.plainTextEdit_log.appendPlainText(combined_text)
 
     def onLogSearchLineChanged(self):
         text = self.ui.lineEdit_logSearch.text()
         self.ui.textEditLogger.setFuzzWord(text)
-        if text:
-            tab = self.ui.tabWidget_allFuncs.currentWidget()
-            uniqueKey = tab.getUniqueKey() if hasattr(tab, 'getUniqueKey') else None
-            self.log_thread = LogUpdateThread(uniqueKey, searchText=text)
-            self.log_thread.search_done.connect(self.updateLogWithSearchResults)
-            self.log_thread.start()
-        else:
-            self.refreshLogger()
+        self.refreshLogger(self.displayUniqueKey)
 
     def onLogTypeChanged(self):
         text = self.ui.comboBox_allLogType.currentText()
         self.ui.textEditLogger.setFuzzWord(text)
-        if text != "ALL":
-            tab = self.ui.tabWidget_allFuncs.currentWidget()
-            uniqueKey = tab.getUniqueKey() if hasattr(tab, 'getUniqueKey') else None
-            self.log_thread = LogUpdateThread(uniqueKey, searchText=text)
-            self.log_thread.search_done.connect(self.updateLogWithSearchResults)
-            self.log_thread.start()
-        else:
+        if text == "ALL":
             self.refreshLogger()
+
 
     def updateLogWithSearchResults(self, filtered_log):
         self.ui.plainTextEdit_log.clear()
@@ -296,5 +263,6 @@ if __name__ == "__main__":
     widget = MainWindow()
     widget.initUI()
     widget.show()
+    LogMgr.setLoggerWidget(widget.ui.textEditLogger)
 
     sys.exit(app.exec())
