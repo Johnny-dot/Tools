@@ -1,7 +1,8 @@
-import sample.src_references.common.g.G as G
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.TerminalUtil as TerminalUtil
+from sample.src_references.common.manager.KBMgr import KBMgr
+from sample.src_references.common.manager.LogMgr import LogMgr
 
 from pathlib import Path
 
@@ -9,7 +10,6 @@ class FoaDetect:
     def __init__(self, kb_vo) -> None:
         self.vo = kb_vo
         self.errors = []
-        self.kbMgr = G.getG("KBMgr")
         self._uniqueKey = self.vo.getUniqueKey()
         # 获取工作环境
         cfg = JsonUtil.readCfg()
@@ -22,7 +22,7 @@ class FoaDetect:
                 f"foa/{name}",
                 "grouplist.txt"
             ]
-            logger = G.getG('LogMgr').getLogger(self._uniqueKey)
+            logger = LogMgr.getLogger(self._uniqueKey)
             logger.info("运行命令: %s", ' '.join(command))
 
             output, error = TerminalUtil.run_command(command, callback)
@@ -32,7 +32,7 @@ class FoaDetect:
                 logger.info("命令执行成功")
             return output, error
         except Exception as e:
-            logger = G.getG('LogMgr').getLogger(self._uniqueKey)
+            logger = LogMgr.getLogger(self._uniqueKey)
             logger.error("执行命令时发生异常: %s", e)
             return None, str(e)
 
@@ -40,26 +40,26 @@ class FoaDetect:
         folder = Path(inPath)
         for file_path in folder.rglob('*.foa'):
             if file_path.is_file():
-                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"Found file: {file_path}")
+                LogMgr.getLogger(self._uniqueKey).info(f"Found file: {file_path}")
                 out, err = self.foa2Fod(file_path.name)
                 if out:
-                    G.getG('LogMgr').getLogger(self._uniqueKey).info("Output: %s", out)
+                    LogMgr.getLogger(self._uniqueKey).info("Output: %s", out)
                 if err:
-                    G.getG('LogMgr').getLogger(self._uniqueKey).error("Error: %s", err)
+                    LogMgr.getLogger(self._uniqueKey).error("Error: %s", err)
         for file in folder.rglob('*'):
             if file.is_file():
                 if file.suffix in {'.txt'}:
                     target_path = Path(outPath) / file.name
                     FolderUtil.move(file, target_path)
                 elif file.suffix in {'.foc', '.fod'}:
-                    G.getG('LogMgr').getLogger(self._uniqueKey).info(f"Deleting {file}")
+                    LogMgr.getLogger(self._uniqueKey).info(f"Deleting {file}")
                     file.unlink()  # 删除文件
 
     def checkAllTxt(self, path):
         folder = Path(path)
         for file in folder.rglob('*.txt'):
             if file.is_file():
-                G.getG('LogMgr').getLogger(self._uniqueKey).info("Checking file: %s", file)
+                LogMgr.getLogger(self._uniqueKey).info("Checking file: %s", file)
                 with file.open('r', encoding='utf-8') as f:
                     lines = f.readlines()
                     for i, line in enumerate(lines):
@@ -72,7 +72,7 @@ class FoaDetect:
                             status = splitArray[4].strip()
 
                             if start_offset < 0 or end_offset < 0:
-                                # G.getG('LogMgr').getLogger(self._uniqueKey).error("Error found in %s: %s", file, line.strip())
+                                # LogMgr.getLogger(self._uniqueKey).error("Error found in %s: %s", file, line.strip())
                                 self.errors.append(f"{file.name}: {line.strip()}")
                                 break
 
@@ -98,33 +98,33 @@ class FoaDetect:
             {"msg": '任务完成', 'rate': 0}
         ]
 
-        self.kbMgr.registerProgress(self._uniqueKey, stages)
+        KBMgr.registerProgress(self._uniqueKey, stages)
 
         # 初始化阶段
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 0)
+        KBMgr.onProgressUpdated(self._uniqueKey, 0)
         # 复制源文件到工作路径
         inPath = self.workPath + "/foa/"
         self.dealSourceFiles(inPath)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 1)
+        KBMgr.onProgressUpdated(self._uniqueKey, 1)
 
         # 扫描并处理 .foa 文件
         outPath = self.vo.getFuncOutPath()
         Path(outPath).mkdir(parents=True, exist_ok=True)
         self.dealAllFoas(inPath, outPath)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 2)
+        KBMgr.onProgressUpdated(self._uniqueKey, 2)
 
         # 转移并清理资源文件
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 3)
+        KBMgr.onProgressUpdated(self._uniqueKey, 3)
 
         # 检查并校验 .txt 文件
         self.checkAllTxt(outPath)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 4)
+        KBMgr.onProgressUpdated(self._uniqueKey, 4)
 
         if not self.errors:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("检测全部合规")
+            LogMgr.getLogger(self._uniqueKey).info("检测全部合规")
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("Errors found: %s", self.errors)
+            LogMgr.getLogger(self._uniqueKey).error("Errors found: %s", self.errors)
         # 停止假进度条并完成任务
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 5)
+        KBMgr.onProgressUpdated(self._uniqueKey, 5)
 
         return self.errors

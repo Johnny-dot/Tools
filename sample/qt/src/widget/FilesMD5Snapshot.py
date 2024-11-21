@@ -10,12 +10,14 @@ from PySide6.QtWidgets import QWidget, QHeaderView, QAbstractItemView, QMenu, QT
 #     pyside2-uic form.ui -o ui_mainwindow.py
 from sample.qt.src.widget.ui_FilesMD5Snapshot import Ui_FilesMD5Snapshot
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.TerminalUtil as TerminalUtil
 import sample.src_references.common.utils.Md5Util as Md5Util
 import sample.src_references.common.utils.JsonUtil as JsonUtil
+from sample.src_references.common.manager.LogMgr import LogMgr
+
 
 class FilesMD5Snapshot(QWidget):
     def __init__(self, uniqueKey, callback):
@@ -31,8 +33,10 @@ class FilesMD5Snapshot(QWidget):
         self._order = None
         self._searchFlag = ["", -1]
         self.initFilesMD5SnapshotPage()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('点击表头可进行按列排序')
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
+        self.logger.info('点击表头可进行按列排序')
+
 
     def getUniqueKey(self):
         return self._uniqueKey
@@ -55,7 +59,7 @@ class FilesMD5Snapshot(QWidget):
 
     def onTargetPathEdited(self):
         targetPath = self.ui.lineEdit_targetPath.displayText()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("目标路径:%s" % targetPath)
+        self.logger.info("目标路径:%s" % targetPath)
         if targetPath == "":
             self.clearTableWidget()
         else:
@@ -85,18 +89,18 @@ class FilesMD5Snapshot(QWidget):
             self._searchFlag = [matchText, 0]
         self.ui.tableWidget_info.scrollToItem(array[self._searchFlag[1]], QAbstractItemView.ScrollHint.PositionAtCenter)
         self.ui.tableWidget_info.setCurrentItem(array[self._searchFlag[1]])
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("查找到%s个匹配项,当前为第%s个" % (arrayLen, self._searchFlag[1] + 1))
+        self.logger.info("查找到%s个匹配项,当前为第%s个" % (arrayLen, self._searchFlag[1] + 1))
 
 
     def onHeaderClicked(self, index):
         if self._order == Qt.DescendingOrder:
             self.ui.tableWidget_info.sortItems(index, Qt.AscendingOrder)
             self._order = Qt.AscendingOrder
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("当前为第%s列,进行了升序排序" % index)
+            self.logger.info("当前为第%s列,进行了升序排序" % index)
         else:
             self.ui.tableWidget_info.sortItems(index, Qt.DescendingOrder)
             self._order = Qt.DescendingOrder
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("当前为第%s列,进行了降序排序" % index)
+            self.logger.info("当前为第%s列,进行了降序排序" % index)
 
 
     def generateMenu(self, pos):
@@ -146,8 +150,8 @@ class FilesMD5Snapshot(QWidget):
                 if not FolderUtil.exists(outUrl):
                     FolderUtil.create(outUrl)
                 FolderUtil.copy(path, outUrl)
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("已成功导出%s项" % len(selections))
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("导出路径:%s" % (self.getFuncOutPath()))
+            self.logger.info("已成功导出%s项" % len(selections))
+            self.logger.info("导出路径:%s" % (self.getFuncOutPath()))
 
     def getVO(self):
         return self.paraVo
@@ -156,7 +160,7 @@ class FilesMD5Snapshot(QWidget):
         path = InputUtil.InPutDirectoryGUI()
         self._targetPath = path if path!='' else None
         if path == "":return
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("目标有效路径,正在计算md5值并显示,需要等待片刻")
+        self.logger.info("目标有效路径,正在计算md5值并显示,需要等待片刻")
         self.ui.lineEdit_targetPath.setText(path)
         self.updateMap(self._targetPath, self._comparedPath)
 
@@ -168,13 +172,13 @@ class FilesMD5Snapshot(QWidget):
             path = InputUtil.InPutDirectoryGUI()
         self._comparedPath = path if path != '' else None
         if path == "":return
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("对比有效路径,正在计算md5值并显示,需要等待片刻")
+        self.logger.info("对比有效路径,正在计算md5值并显示,需要等待片刻")
         self.ui.lineEdit_compared.setText(path)
         self.updateMap(self._targetPath, self._comparedPath)
 
     def updateMap(self,targetPath, comparedPath):
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("目标路径:%s" % self._targetPath)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("对比路径:%s" % self._comparedPath)
+        self.logger.info("目标路径:%s" % self._targetPath)
+        self.logger.info("对比路径:%s" % self._comparedPath)
         
         if targetPath :
             filesDict = FolderUtil.getFilesInfo(targetPath)
@@ -204,11 +208,11 @@ class FilesMD5Snapshot(QWidget):
             else:
                 return JsonUtil.readDict(self._comparedPath)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("对比文件不存在:%s" % self._comparedPath)
+            self.logger.info("对比文件不存在:%s" % self._comparedPath)
 
 
     def clearTableWidget(self):
-        # G.getG('LogMgr').getLogger(self._uniqueKey).info("清空")
+        # self.logger.info("清空")
         self.ui.tableWidget_info.clear()
         self.ui.tableWidget_info.setRowCount(0)
         title1 = QCoreApplication.translate("FilesMD5Snapshot", u"\u6587\u4ef6\u540d", None)
@@ -259,7 +263,7 @@ class FilesMD5Snapshot(QWidget):
     def onClickExport(self):
         snapshotCfg = self.getFuncOutPath() + 'snapshot.json'
         JsonUtil.writeDict(self.fileMd5Map, snapshotCfg)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("文件快照已导出至:%s" % snapshotCfg)
+        self.logger.info("文件快照已导出至:%s" % snapshotCfg)
         if self._callback:
             self._callback(self.getUniqueKey())
 
@@ -277,4 +281,4 @@ class FilesMD5Snapshot(QWidget):
                 if not FolderUtil.exists(outPath):
                     FolderUtil.create(outPath)
                 FolderUtil.copy(path, outPath)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("差异文件已导出,点击‘输出路径’前往查看")      
+        self.logger.info("差异文件已导出,点击‘输出路径’前往查看")      

@@ -1,5 +1,6 @@
 import os
 from sample.src_references.common.g import G
+from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.utils import JsonUtil, FolderUtil, SvnUtil
 
 
@@ -10,7 +11,7 @@ class BranchCover:
         # 获取工作环境
         cfg = JsonUtil.readCfg()
         self.workPath = cfg.get("environment").get('branchCover')
-        self.logger = G.getG('LogMgr').getLogger(self._uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
 
     def cover(self):
         pass

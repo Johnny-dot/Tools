@@ -10,7 +10,6 @@ from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
 
 from sample.qt.src.common import Enum
-import sample.src_references.common.g.G as G
 import sample.src_references.common.utils.StringUtil as StringUtil
 from sample.qt.src.common.AdminAuthManager import AuthManager
 
@@ -30,7 +29,6 @@ class LogUpdateThread(QThread):
 
     def __init__(self, uniqueKey, searchText=None):
         super().__init__()
-        self.logMgr = G.getG('LogMgr')
         self.uniqueKey = uniqueKey
         self.searchText = searchText
         self._running = True  # 标志变量
@@ -38,7 +36,7 @@ class LogUpdateThread(QThread):
     def run(self):
         if not self.uniqueKey:
             return
-        log = self.logMgr.getLog(self.uniqueKey)
+        log = LogMgr.getLog(self.uniqueKey)
         buffer = []
         batch_size = 50  # 调整这个值以控制每批次更新的行数
 
@@ -77,6 +75,7 @@ class MainWindow(QMainWindow):
         self.prolist_item_added.connect(self.onListWidgetProgressItemAdded)
 
     def initUI(self):
+        LogMgr.setLoggerWidget(widget.ui.textEditLogger)
         self.ui.textEditLogger = QTextEditLogger(self.ui.plainTextEdit_log, self)
         self.ui.plainTextEdit_log.document().setMaximumBlockCount(1000)  # 设置最大显示 1000 行
         self.setWindowTitle('KBTools')
@@ -112,14 +111,14 @@ class MainWindow(QMainWindow):
             tab = self.ui.tabWidget_allFuncs.currentWidget()
             displayUniqueKey = tab.getUniqueKey() if hasattr(tab, 'getUniqueKey') else None
             if not hasattr(tab, 'getFuncOutPath'):
-                G.getG('LogMgr').getLogger(displayUniqueKey).info('前往失败,当前功能不支持这个选项')
+                LogMgr.getLogger(displayUniqueKey).info('前往失败,当前功能不支持这个选项')
             else:
                 path = Path(tab.getFuncOutPath())
                 if path.exists():
                     path = path.resolve()
                     os.startfile(str(path))
         except Exception as e:
-            G.getG('LogMgr').getLogger(displayUniqueKey).error(f"Error opening path: {e}")
+            LogMgr.getLogger(displayUniqueKey).error(f"Error opening path: {e}")
 
     def onCommandLinkButtonLogClicked(self):
         try:
@@ -131,8 +130,8 @@ class MainWindow(QMainWindow):
             if not displayUniqueKey:
                 return
             # 获取日志文件路径
-            logMgr = G.getG('LogMgr')
-            logPath = logMgr.getLogUrl(displayUniqueKey)
+
+            logPath = LogMgr.getLogUrl(displayUniqueKey)
             path = Path(logPath)
 
             if path.exists():
@@ -142,11 +141,11 @@ class MainWindow(QMainWindow):
                 TerminalUtil.open_in_explorer(str(path))
             else:
                 # 如果日志文件不存在，则记录警告
-                logMgr.getLogger(displayUniqueKey).warning(f"日志文件不存在: {logPath}")
+                LogMgr.getLogger(displayUniqueKey).warning(f"日志文件不存在: {logPath}")
         except Exception as e:
             # 捕获异常并记录错误日志
             displayUniqueKey = displayUniqueKey if 'displayUniqueKey' in locals() else "Unknown"
-            G.getG('LogMgr').getLogger(displayUniqueKey).error(f"打开日志文件时发生错误: {e}")
+            LogMgr.getLogger(displayUniqueKey).error(f"打开日志文件时发生错误: {e}")
 
     def onFuncSearchLineChanged(self, text):
         self._funcSearchLine = text
@@ -187,24 +186,16 @@ class MainWindow(QMainWindow):
         self.refreshProgress(uniqueKey)
         self.refreshProList(uniqueKey)
 
-        kbMgr = G.getG('KBMgr')
-        # kbMgr.addGUIProCallback(lambda percent: self.progress_updated.emit(percent))
-        # kbMgr.addGUIProListCallback(lambda item: self.prolist_item_added.emit(item))
-        kbMgr.addGUIProCallback(lambda percent: self.onProgressBarValueChanged(percent))
-        kbMgr.addGUIProListCallback(lambda item: self.onListWidgetProgressItemAdded(item))
+        KBMgr.addGUIProCallback(lambda percent: self.progress_updated.emit(percent))
+        KBMgr.addGUIProListCallback(lambda item: self.prolist_item_added.emit(item))
+
 
     def onProgressBarValueChanged(self, value):
         self.ui.progressBar.setValue(value)
         self.ui.progressWidget.update_progress(value)
 
     def onListWidgetProgressItemAdded(self, item):
-        # 遍历当前 listWidget 的所有项，检查是否已经存在
-        items = [self.ui.listWidget_progress.item(i).text() for i in range(self.ui.listWidget_progress.count())]
-
-        if item not in items:
-            self.ui.listWidget_progress.addItem(item)
-        else:
-            print(f"Item '{item}' already exists in the list.")
+        self.ui.listWidget_progress.addItem(item)
 
     def setAvailableFuncs(self):
         self.ui.listWidget_allFuncs.clear()
@@ -225,7 +216,7 @@ class MainWindow(QMainWindow):
             self.ui.listWidget_allFuncs.addItem(item)
 
     def onBuildFinish(self, uniqueKey=None):
-        G.getG('LogMgr').getLogger(uniqueKey).info('任务完成，执行回调')
+        LogMgr.getLogger(uniqueKey).info('任务完成，执行回调')
 
     def refreshLogger(self, uniqueKey=None):
         if not uniqueKey:
@@ -289,14 +280,14 @@ class MainWindow(QMainWindow):
         self.ui.progressBar.reset()
         self.ui.progressWidget.update_progress(0)
         if uniqueKey:
-            percent = G.getG('KBMgr').getProgressNum(uniqueKey)
+            percent = KBMgr.getProgressNum(uniqueKey)
             self.ui.progressBar.setValue(percent)
             self.ui.progressWidget.update_progress(percent)
 
     def refreshProList(self, uniqueKey=None):
+        self.ui.listWidget_progress.clear()
         if uniqueKey:
-            proListInfo = G.getG('KBMgr').getProListInfo(uniqueKey)
-            self.ui.listWidget_progress.clear()
+            proListInfo = KBMgr.getProListInfo(uniqueKey)
             for item in proListInfo:
                 self.ui.listWidget_progress.addItem(item.get('msg'))
 
@@ -305,9 +296,5 @@ if __name__ == "__main__":
     widget = MainWindow()
     widget.initUI()
     widget.show()
-
-    LogMgr(widget.ui.textEditLogger)
-    kbMgr = KBMgr()
-    G.setG('KBMgr', kbMgr)  # 确保在全局对象中设置 KBMgr 实例
 
     sys.exit(app.exec())

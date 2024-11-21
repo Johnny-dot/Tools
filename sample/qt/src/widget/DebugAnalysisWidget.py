@@ -3,9 +3,10 @@ from PySide6.QtWidgets import QWidget
 from sample.qt.src.common import Enum
 from sample.qt.src.widget.ui_DebugAnalysisWidget import Ui_DebugAnalysisWidget
 
-import sample.src_references.common.g.G as G
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.utils.FolderUtil as FolderUtil
+from sample.src_references.common.manager.LogMgr import LogMgr
+
 
 class DebugAnalysisWidget(QWidget):
     def __init__(self, uniqueKey, callback):
@@ -19,7 +20,8 @@ class DebugAnalysisWidget(QWidget):
         self.ui = Ui_DebugAnalysisWidget()
         self.ui.setupUi(self)
         self.initDetectDuplicateFilesUI()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getFuncOutPath(self):
         FOA_BUILD_PATH = 'sample/output/'
@@ -57,7 +59,7 @@ class DebugAnalysisWidget(QWidget):
     def updatePendingResources(self, filesDict):
         for fileName, url in filesDict.items():
             if self._pendingResources.get(fileName):
-                G.getG('LogMgr').getLogger(self._uniqueKey).warning("文件%s已存在,进行地址更新" % fileName)
+                self.logger.warning("文件%s已存在,进行地址更新" % fileName)
             self._pendingResources[fileName] = url
 
     def clearPendingList(self):

@@ -1,9 +1,11 @@
-import sample.src_references.common.g.G as G
+
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.TerminalUtil as TerminalUtil
 from pathlib import Path
-import os
+
+from sample.src_references.common.manager.KBMgr import KBMgr
+from sample.src_references.common.manager.LogMgr import LogMgr
 
 
 class GMSerialize:
@@ -12,9 +14,10 @@ class GMSerialize:
     def __init__(self, kb_vo) -> None:
         self.vo = kb_vo
         self.errors = []
-        self.kbMgr = G.getG("KBMgr")
         self._uniqueKey = self.vo.getUniqueKey()
         self.workPath = self._load_config().get("environment").get('gmSerialize')
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(self._uniqueKey)
 
     @classmethod
     def _load_config(cls):
@@ -23,7 +26,6 @@ class GMSerialize:
         return cls._cfg
 
     def executeServer(self):
-        logger = G.getG('LogMgr').getLogger(self._uniqueKey)
         try:
             # 构建可执行文件的完整路径
             command = str(Path(self.workPath) / 'fancy-server.exe')
@@ -31,27 +33,27 @@ class GMSerialize:
             # 使用命令列表
             cmd_args = [command]
 
-            logger.info("运行命令: %s", command)
+            self.logger.info("运行命令: %s", command)
 
             # 调用 run_command，并指定工作目录
             output, error = TerminalUtil.run_command(cmd_args, cwd=self.workPath)
             if error:
-                logger.error("命令执行失败: %s", error)
+                self.logger.error("命令执行失败: %s", error)
             else:
-                logger.info("命令执行成功")
+                self.logger.info("命令执行成功")
             return output, error
         except Exception as e:
             error_msg = f"执行命令时发生异常: {e}"
-            logger.error(error_msg)
+            self.logger.error(error_msg)
             self.errors.append(error_msg)
             return None, error_msg
 
     def processAllFiles(self):
         out, err = self.executeServer()
         if out:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("Output: %s", out)
+            self.logger.info("Output: %s", out)
         if err:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("Error: %s", err)
+            self.logger.error("Error: %s", err)
 
         outPath = Path(self.vo.getFuncOutPath())
         outPath.mkdir(parents=True, exist_ok=True)
@@ -80,7 +82,7 @@ class GMSerialize:
                         file.unlink()
                     elif file.is_dir():
                         FolderUtil.removeDirectory(file)
-                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"{sub_path} directory cleaned.")
+                self.logger.info(f"{sub_path} directory cleaned.")
 
     def main(self):
         stages = [
@@ -93,23 +95,23 @@ class GMSerialize:
 
         self.cleanDirectories()
 
-        self.kbMgr.registerProgress(self._uniqueKey, stages)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 0)
+        KBMgr.registerProgress(self._uniqueKey, stages)
+        KBMgr.onProgressUpdated(self._uniqueKey, 0)
 
         inPath = Path(self.workPath) / "input"
         self.copySourceFiles(inPath)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 1)
+        KBMgr.onProgressUpdated(self._uniqueKey, 1)
 
         self.processAllFiles()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 2)
+        KBMgr.onProgressUpdated(self._uniqueKey, 2)
 
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 3)
+        KBMgr.onProgressUpdated(self._uniqueKey, 3)
 
         if self.errors:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("Errors found: %s", self.errors)
+            self.logger.error("Errors found: %s", self.errors)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("所有文件处理成功")
+            self.logger.info("所有文件处理成功")
 
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 4)
+        KBMgr.onProgressUpdated(self._uniqueKey, 4)
 
         return self.errors

@@ -1,18 +1,23 @@
 from pathlib import Path
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 import sample.src_references.common.utils.FileUtil as FileUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.TerminalUtil as TerminalUtil
+from sample.src_references.common.manager.KBMgr import KBMgr
+from sample.src_references.common.manager.LogMgr import LogMgr
+
+
 class ResConvert:
     def __init__(self, kb_vo) -> None:
         self.vo = kb_vo
-        self.kbMgr = G.getG("KBMgr")
         self._uniqueKey = self.vo.getUniqueKey()
         # 获取工作环境
         cfg = JsonUtil.readCfg()
         self.workPath = cfg.get("environment").get('resConvert')
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(self._uniqueKey)
 
     def convertEtc(self):
         cmd = str(Path(self.workPath) / 'fancy-dev.exe')
@@ -44,7 +49,7 @@ class ResConvert:
         elif platform == "mclient":
             folderName = 'mclient'
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error('不支持的平台：%s' % platform)
+            self.logger.error('不支持的平台：%s' % platform)
 
         return folderName
 
@@ -79,23 +84,23 @@ class ResConvert:
         if FolderUtil.exists(outputUrl) or FolderUtil.exists(outputUrlExtra):
             FolderUtil.copy(workDir, outputUrl)
             FolderUtil.copy(workDir, outputUrlExtra)
-            G.getG('LogMgr').getLogger(self._uniqueKey).info('已将转换后的资源输出到指定路径')
+            self.logger.info('已将转换后的资源输出到指定路径')
         else:
             finalOutPath = self.vo.getFuncOutPath()
             FolderUtil.copy(workDir, finalOutPath)
 
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('资源转换成功')
+        self.logger.info('资源转换成功')
 
 
     def convert(self):
         platform = self.vo.getVal('platform')
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('前置文件准备就绪,即将调起引擎转换资源,请耐心等待')
+        self.logger.info('前置文件准备就绪,即将调起引擎转换资源,请耐心等待')
         if platform == "android":
             self.convertEtc()
         elif platform == "ios":
             self.convertPvr()
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error('不支持的平台：%s' % platform)
+            self.logger.error('不支持的平台：%s' % platform)
 
     def main(self):
         stages = [
@@ -104,7 +109,7 @@ class ResConvert:
             ,{"msg":'将已完成资源转移到目标路径', 'rate':0.3}
             ,{"msg":'完成'}
         ]
-        self.kbMgr.registerProgress(self.vo.getUniqueKey(), stages)
+        KBMgr.registerProgress(self.vo.getUniqueKey(), stages)
         self.dealSourceFiles()
         self.generateBuildConfig()
         self.convert()

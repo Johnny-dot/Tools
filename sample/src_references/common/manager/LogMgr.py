@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 import time
 import logging
 
@@ -17,37 +18,19 @@ LOG_ENABLED = True
 LOG_TO_CONSOLE = True
 # 是否输出到文件
 LOG_TO_FILE = True
-# 每条日志输出格式
-# LOG_FORMAT = '%(levelname)s - %(asctime)s - process: %(process)d - %(filename)s - %(name)s - %(lineno)d - %(module)s - %(message)s'
-# LOG_FORMAT = '%(levelname)s - %(asctime)s - --[%(message)s]-- - %(filename)s - %(lineno)d - %(module)s - %(name)s'
 LOG_FORMAT = '%(levelname)s - %(asctime)s - --[%(message)s]-- - %(filename)s - %(lineno)d'
 
-import threading
-
-def Singleton(cls):
-    _instance = {}
-    _lock = threading.Lock()
-
-    def _singleton(*args, **kargs):
-        with _lock:
-            if cls not in _instance:
-                _instance[cls] = cls(*args, **kargs)
-        return _instance[cls]
-
-    return _singleton
-
-
-@Singleton
 class LogMgr(Manager.Manager):
-    def __init__(self, loggerWidget) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._lock = threading.Lock()
         nowdate = time.strftime("%y%m%d", time.localtime())
         self._loggers = {}
         self._logDir = os.path.abspath(LOG_PATH + nowdate)
         self._formatter = logging.Formatter(LOG_FORMAT)
-        self._loggerWidget = loggerWidget
 
+    def setLoggerWidget(self, loggerWidget):
+        self._loggerWidget = loggerWidget
 
     def getLog(self, uniqueKey):
         return FileUtil.readFile(self.getLogUrl(uniqueKey))
@@ -70,7 +53,7 @@ class LogMgr(Manager.Manager):
 
         # 检查是否已经添加过 Handler
         if not logger.handlers:
-        # 输出到控制台
+            # 输出到控制台
             if LOG_ENABLED and LOG_TO_CONSOLE:
                 stream_handler = logging.StreamHandler(sys.stdout)
                 stream_handler.setFormatter(self._formatter)
@@ -79,9 +62,9 @@ class LogMgr(Manager.Manager):
             # 输出到文件
             if LOG_ENABLED and LOG_TO_FILE:
                 # 添加 FileHandler
-                type = uniqueKey.split('-')[0]
-                if not FolderUtil.exists(self._logDir+'/'+type):
-                    FolderUtil.create(self._logDir+'/'+type)
+                type_ = uniqueKey.split('-')[0]
+                if not FolderUtil.exists(self._logDir + '/' + type_):
+                    FolderUtil.create(self._logDir + '/' + type_)
                 file_handler = logging.FileHandler(self.getLogUrl(uniqueKey), encoding='utf-8')
                 file_handler.setFormatter(self._formatter)
                 logger.addHandler(file_handler)
@@ -91,6 +74,8 @@ class LogMgr(Manager.Manager):
                 self._loggerWidget.setFormatter(self._formatter)
                 logger.addHandler(self._loggerWidget)
 
-            return self._loggers[uniqueKey]
+        return self._loggers[uniqueKey]
 
 
+# 模块级单例
+LogMgr = LogMgr()

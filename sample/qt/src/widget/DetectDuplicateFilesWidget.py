@@ -3,9 +3,10 @@ import subprocess
 from PySide6.QtWidgets import QWidget, QListWidgetItem, QMenu, QMessageBox, QAbstractItemView
 from PySide6.QtCore import Qt
 from sample.qt.src.widget.ui_DetectDuplicateFilesWidget import Ui_DetectDuplicateFilesWidget
-import sample.src_references.common.g.G as G
+
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.Main as ToolsMain  # 导入Main模块
+from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.utils import FolderUtil, TerminalUtil
 
 
@@ -20,7 +21,8 @@ class DetectDuplicateFilesWidget(QWidget):
         self.ui = Ui_DetectDuplicateFilesWidget()
         self.ui.setupUi(self)
         self.initDetectDuplicateFilesUI()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getUniqueKey(self):
         return self._uniqueKey
@@ -44,9 +46,9 @@ class DetectDuplicateFilesWidget(QWidget):
         if FolderUtil.exists(path):
             if path and self._inPath != path:
                 self._inPath = path
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("成功设置输入路径:%s" % self._inPath)
+            self.logger.info("成功设置输入路径:%s" % self._inPath)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("路径不存在:%s" % path)
+            self.logger.warning("路径不存在:%s" % path)
 
     def clearPendingList(self):
         self.ui.listWidget_pending.clear()
@@ -72,7 +74,7 @@ class DetectDuplicateFilesWidget(QWidget):
         # Optional: Update the total duplicates count and size somewhere in the UI
         duplicate_groups = len(duplicates)
         total_size = size * len(duplicates)
-        G.getG('LogMgr').getLogger(self.getUniqueKey()).info(
+        LogMgr.getLogger(self.getUniqueKey()).info(
             f"Detected {duplicate_groups} duplicate groups with a total size of {self.convert_size(total_size)}."
         )
 
@@ -173,7 +175,7 @@ class DetectDuplicateFilesWidget(QWidget):
             QMessageBox.warning(self, "路径未设置", "请先设置路径后再进行检测。")
             return
 
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("开始检查重复文件...")
+        self.logger.info("开始检查重复文件...")
 
         buildDict = self.getBuildDict()
         self.paraVo = ToolsMain.inputByDict(buildDict)
@@ -190,11 +192,11 @@ class DetectDuplicateFilesWidget(QWidget):
                 self.ui.listWidget_pending.addItem(item)
 
             # 记录检测到的重复文件组数和总大小
-            G.getG('LogMgr').getLogger(self._uniqueKey).info(
+            self.logger.info(
                 f"检测到 {duplicate_groups} 组重复文件，总大小为 {self.convert_size(total_size)}。"
             )
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("未检测到重复文件。")
+            self.logger.info("未检测到重复文件。")
             QMessageBox.information(self, "检测完成", "未检测到重复文件。")
 
         if self._callback:

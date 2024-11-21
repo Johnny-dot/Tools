@@ -3,9 +3,11 @@ from PySide6.QtWidgets import QWidget
 from sample.qt.src.common import Enum
 from sample.qt.src.widget.ui_GMSerializeWidget import Ui_GMSerializeWidget
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.utils.FolderUtil as FolderUtil
+from sample.src_references.common.manager.LogMgr import LogMgr
+
 
 class GMSerializeWidget(QWidget):
     def __init__(self, uniqueKey, callback):
@@ -19,7 +21,7 @@ class GMSerializeWidget(QWidget):
         self.ui = Ui_GMSerializeWidget()
         self.ui.setupUi(self)
         self.initDetectDuplicateFilesUI()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        LogMgr.getLogger(self._uniqueKey).info(uniqueKey)
 
     def getFuncOutPath(self):
         FOA_BUILD_PATH = 'sample/output/'
@@ -57,7 +59,7 @@ class GMSerializeWidget(QWidget):
     def updatePendingResources(self, filesDict):
         for fileName, url in filesDict.items():
             if self._pendingResources.get(fileName):
-                G.getG('LogMgr').getLogger(self._uniqueKey).warning("文件%s已存在,进行地址更新" % fileName)
+                LogMgr.getLogger(self._uniqueKey).warning("文件%s已存在,进行地址更新" % fileName)
             self._pendingResources[fileName] = url
 
     def clearPendingList(self):

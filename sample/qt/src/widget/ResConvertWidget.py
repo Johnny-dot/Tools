@@ -8,11 +8,12 @@ from PySide6.QtWidgets import QWidget
 #     pyside2-uic form.ui -o ui_mainwindow.py
 from sample.qt.src.widget.ui_ResConvertWidget import Ui_ResConvertWidget
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.vos.FoaBuildVO as KB_VO
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
+from sample.src_references.common.manager.LogMgr import LogMgr
 
 ALL_PLATFORM_LANG = KB_VO.ALL_PLATFORM_LANG
 
@@ -29,7 +30,8 @@ class ResConvertWidget(QWidget):
         self.ui = Ui_ResConvertWidget()
         self.ui.setupUi(self)
         self.initResConvertPage()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getUniqueKey(self):
         return self._uniqueKey
@@ -70,7 +72,7 @@ class ResConvertWidget(QWidget):
     def updatePendingResources(self, filesDict):
         for fileName, url in filesDict.items():
             if self._pendingResources.get(fileName):
-                G.getG('LogMgr').getLogger(self._uniqueKey).warning("文件%s已存在,进行替换" % fileName)
+                self.logger.warning("文件%s已存在,进行替换" % fileName)
             self._pendingResources[fileName] = url
 
 
@@ -95,9 +97,9 @@ class ResConvertWidget(QWidget):
                 self.refreshPendingList(path)
 
             self._inPath = path
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("成功设置输入路径:%s" % self._inPath)
+            self.logger.info("成功设置输入路径:%s" % self._inPath)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("路径不存在:%s" % path)
+            self.logger.warning("路径不存在:%s" % path)
 
     def onSetOutPath(self, path):
         if FolderUtil.exists(path):
@@ -105,9 +107,9 @@ class ResConvertWidget(QWidget):
                 self.refreshProcessedList(path)
 
             self._outPath = path
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("成功设置输出路径:%s" % self._inPath)
+            self.logger.info("成功设置输出路径:%s" % self._inPath)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("路径:%s不存在:" % path)
+            self.logger.warning("路径:%s不存在:" % path)
 
     def clearPendingList(self):
         self._pendingResources = {}

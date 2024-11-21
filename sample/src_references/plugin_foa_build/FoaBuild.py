@@ -2,7 +2,7 @@ import os
 import time
 from pathlib import Path
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.vos.FoaBuildVO as KB_VO
 import sample.src_references.common.utils.JsonUtil as JsonUtil
@@ -10,7 +10,9 @@ import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.FileUtil as FileUtil
 import sample.src_references.common.utils.SvnUtil as SvnUtil
 import sample.src_references.common.utils.Md5Util as Md5Util
+from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.utils import TerminalUtil
+from sample.src_references.common.manager.KBMgr import KBMgr
 
 ALL_BRANCHES_REPO = KB_VO.ALL_BRANCHES_REPO
 
@@ -18,8 +20,9 @@ ALL_BRANCHES_REPO = KB_VO.ALL_BRANCHES_REPO
 class FoaBuild:
     def __init__(self, kb_vo) -> None:
         self.vo = kb_vo
-        self.kbMgr = G.getG("KBMgr")
         self._uniqueKey = self.vo.getUniqueKey()
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(self._uniqueKey)
 
     # 1.将所选分支res与快照配置比对出差异文件
     # 2.转差异资源并更新至分支里target_res
@@ -47,9 +50,8 @@ class FoaBuild:
 
         snapshotPath = self.vo.getVal('snapshotPath')
         if FolderUtil.exists(snapshotPath):
-            logger = G.getG('LogMgr').getLogger(self._uniqueKey)
-            logger.info('已勾选自动转资源,开始自动流程')
-            logger.info('快照文件有效,正在对比差异文件')
+            self.logger.info('已勾选自动转资源,开始自动流程')
+            self.logger.info('快照文件有效,正在对比差异文件')
 
             # 1.与快照配置比对出差异文件
             comparedDict = JsonUtil.readDict(snapshotPath)
@@ -67,18 +69,18 @@ class FoaBuild:
                     # 新增
                     ifDiff = True
                     diffResMove(path)
-                    logger.info('新增内容:%s' % path)
+                    self.logger.info('新增内容:%s' % path)
                 elif md5 != oMd5:
                     ifDiff = True
                     # 差异
                     diffResMove(path)
-                    logger.info('差异内容:%s' % path)
+                    self.logger.info('差异内容:%s' % path)
                 else:
                     # 相同
                     pass
 
             if not ifDiff:
-                logger.info('资源文件未对比出差异,即将跳过转资源')
+                self.logger.info('资源文件未对比出差异,即将跳过转资源')
                 return
 
             # 2.转差异资源
@@ -90,12 +92,12 @@ class FoaBuild:
                 outUrl1 = self.XAUrl + '/' + "res_pvr"
                 outUrl2 = self.XAUrl + '/' + "res_pvr" + '_bf'
 
-            logger.info('已对比出差异文件,准备进行转换并自动更正至对应分支资源')
+            self.logger.info('已对比出差异文件,准备进行转换并自动更正至对应分支资源')
             resVo = getConvertResVo(inUrl, outUrl1, outUrl2)
             ToolsMain.main(resVo)
 
             # 3.更新快照文件
-            logger.info('更新资源同步完成,准备更新文件快照')
+            self.logger.info('更新资源同步完成,准备更新文件快照')
             snapshotBinding = JsonUtil.readInCfg('snapshot_binding') or {}
             branches = self.vo.getVal("branches")
             bindingInfo = snapshotBinding.get(branches)
@@ -112,7 +114,7 @@ class FoaBuild:
                 bindingInfo['snapshot_%s' % self.platform] = newSnapshotCfgPath
                 snapshotBinding[branches] = bindingInfo
                 JsonUtil.saveInCfg('snapshot_binding', snapshotBinding)
-                logger.info(f'文件快照更新完成,新快照文件为:{newSnapshotCfgPath}')
+                self.logger.info(f'文件快照更新完成,新快照文件为:{newSnapshotCfgPath}')
 
     def initWorkEnv(self):
         # 获取工作环境
@@ -128,9 +130,9 @@ class FoaBuild:
 
         # 确定分支
         branches = self.vo.getVal_Lua("branches")
-        self.XAUrl = self.kbMgr.getBranchUrl(branches)
+        self.XAUrl = KBMgr.getBranchUrl(branches)
         result = SvnUtil.updateSvn(self.XAUrl)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(f"更新分支 {branches} 结果: {result}")
+        self.logger.info(f"更新分支 {branches} 结果: {result}")
 
         # 分支最新版本
         repoUrl = ALL_BRANCHES_REPO.get(branches)
@@ -158,55 +160,53 @@ class FoaBuild:
                     if diff:
                         print(f"当前文件名: {file_name}")  # 调试代码，检查 file_name 的值
                         if file_name == 'nodod.lua':
-                            G.getG('LogMgr').getLogger(self._uniqueKey).info("检测到首包变更，此次变更的内容为：")
+                            self.logger.info("检测到首包变更，此次变更的内容为：")
                         elif file_name == 'pack2.lua':
-                            G.getG('LogMgr').getLogger(self._uniqueKey).info("检测到二包变更，此次变更的内容为：")
+                            self.logger.info("检测到二包变更，此次变更的内容为：")
 
                         for line in diff:
-                            G.getG('LogMgr').getLogger(self._uniqueKey).info(line.strip())
+                            self.logger.info(line.strip())
                     else:
-                        G.getG('LogMgr').getLogger(self._uniqueKey).info("首包和二包的配置文件无变更")
+                        self.logger.info("首包和二包的配置文件无变更")
 
                 # 复制文件
                 FolderUtil.copy(source_file, destination_file)
-                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"复制文件 {file_name} 到工作目录 {self.workPath}")
+                self.logger.info(f"复制文件 {file_name} 到工作目录 {self.workPath}")
             else:
-                G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"文件 {file_name} 不存在于路径 {source_file}")
+                self.logger.warning(f"文件 {file_name} 不存在于路径 {source_file}")
 
     def checkCode(self):
         code_path = os.path.join(self.XAUrl, 'code')
         res_path = os.path.join(self.XAUrl, 'res')
 
-        logger = G.getG('LogMgr').getLogger(self._uniqueKey)
-
         # 检查Lua代码的语法
         is_syntax_correct, syntax_errors = TerminalUtil.check_code_syntax(code_path)
         if not is_syntax_correct:
-            logger.warning("Lua syntax errors found in the following files:")
+            self.logger.warning("Lua syntax errors found in the following files:")
             for file_path, error_message in syntax_errors:
-                logger.warning(f"File: {file_path}, Error: {error_message}")
+                self.logger.warning(f"File: {file_path}, Error: {error_message}")
             return False
 
         # 检查code文件夹中的文件名是否小写
         is_correct_code, incorrect_files_code = FileUtil.check_lowercase_filenames(code_path)
         if not is_correct_code:
-            logger.warning("Filename check failed in code folder. The following files are not lowercase:")
+            self.logger.warning("Filename check failed in code folder. The following files are not lowercase:")
             for file_path in incorrect_files_code:
-                logger.warning(f"File: {file_path}")
+                self.logger.warning(f"File: {file_path}")
 
         # # 检查res文件夹中的文件名是否小写
         # is_correct_res, incorrect_files_res = FileUtil.check_lowercase_filenames(res_path, ignore_extensions=['.mp3', '.ogg'])
         # if not is_correct_res:
-        #     logger.warning("Filename check failed in res folder. The following files are not lowercase:")
+        #     self.logger.warning("Filename check failed in res folder. The following files are not lowercase:")
         #     for file_path in incorrect_files_res:
-        #         logger.warning(f"File: {file_path}")
+        #         self.logger.warning(f"File: {file_path}")
 
         # 如果任一检查不通过，则返回False
         if not is_correct_code:
-            logger.warning("Filename check did not pass. Please review the errors above.")
+            self.logger.warning("Filename check did not pass. Please review the errors above.")
             return False
 
-        logger.info("Code check passed.")
+        self.logger.info("Code check passed.")
 
         return True
 
@@ -267,9 +267,9 @@ class FoaBuild:
         # 使用 run_command 来执行打包命令，并传递工作目录 cwd
         output, error = TerminalUtil.run_command(bat_out_path, cwd=cwd)
         if error:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error(f"Error during build: {error}")
+            self.logger.error(f"Error during build: {error}")
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info(f"Build output: {output}")
+            self.logger.info(f"Build output: {output}")
 
     def getFoaDetectVO(self):
         sourceItems = {}
@@ -339,47 +339,47 @@ class FoaBuild:
         ]
 
         # 注册进度条
-        self.kbMgr.registerProgress(self.vo.getUniqueKey(), stages)
+        KBMgr.registerProgress(self.vo.getUniqueKey(), stages)
 
         # 初始化工作环境
         self.initWorkEnv()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 0)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("初始化工作环境")
+        KBMgr.onProgressUpdated(self._uniqueKey, 0)
+        self.logger.info("初始化工作环境")
 
         # 检测代码是否合规
         isCorrect = self.checkCode()
         if not isCorrect: return
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 1)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("检测代码是否合规完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 1)
+        self.logger.info("检测代码是否合规完成")
 
         # 自动转换资源
         self.autoConvertRes()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 2)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("自动转换资源完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 2)
+        self.logger.info("自动转换资源完成")
 
         # 生成打包配置
         self.generateBuildConfig()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 3)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("生成打包配置完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 3)
+        self.logger.info("生成打包配置完成")
 
         # 执行打包命令
         self.build()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 4)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("执行打包命令完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 4)
+        self.logger.info("执行打包命令完成")
 
         foaErrors = self.checkFoa()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 5)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("校验FOA是否合规完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 5)
+        self.logger.info("校验FOA是否合规完成")
 
         # 转移FOA至outpath
         self.dealOutPut()
         self.dealExtraOutPut()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 6)
-        G.getG('LogMgr').getLogger(self._uniqueKey).info("转移FOA至outpath完成")
+        KBMgr.onProgressUpdated(self._uniqueKey, 6)
+        self.logger.info("转移FOA至outpath完成")
 
         # 构建完成
         # self.cleanTemp()
-        # self.kbMgr.onProgressUpdated(self._uniqueKey, 7)
-        # G.getG('LogMgr').getLogger(self._uniqueKey).info("清理临时文件完成")
+        # KBMgr.onProgressUpdated(self._uniqueKey, 7)
+        # self.logger.info("清理临时文件完成")
 
         return foaErrors, True

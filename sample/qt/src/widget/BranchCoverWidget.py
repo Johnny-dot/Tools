@@ -10,8 +10,8 @@ from PySide6.QtCore import Qt
 #     pyside2-uic form.ui -o ui_mainwindow.py
 from sample.qt.src.widget.ui_BranchCoverWidget import Ui_BranchCoverWidget
 
-import sample.src_references.common.g.G as G
 import sample.src_references.Main as ToolsMain
+from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.utils import FolderUtil, JsonUtil
 
 
@@ -24,7 +24,8 @@ class BranchCoverWidget(QWidget):
         self.initBranchCoverPage()
         self._uniqueKey = uniqueKey
         self.paraVo = None
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getUniqueKey(self):
         return self._uniqueKey

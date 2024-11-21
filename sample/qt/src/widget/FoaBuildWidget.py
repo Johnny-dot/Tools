@@ -7,7 +7,6 @@ from sample.qt.src.pyui.BatchBuildDialog import BatchBuildDialog
 from sample.qt.src.widget.ui_FoaBuildWidget import Ui_FoaBuildWidget
 from sample.qt.src.widget.QuicParasAddTips import QuicParasAddTips
 
-import sample.src_references.common.g.G as G
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.JsonUtil as JsonUtil
@@ -15,7 +14,9 @@ import sample.src_references.common.utils.StringUtil as StringUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
 import sample.src_references.common.utils.TerminalUtil as TerminalUtil
 import sample.src_references.common.vos.FoaBuildVO as KB_VO
+from sample.src_references.common.manager.LogMgr import LogMgr
 from sample.src_references.common.utils import Md5Util
+from sample.src_references.common.manager.KBMgr import KBMgr
 
 import os
 
@@ -36,7 +37,8 @@ class FoaBuildWidget(QWidget):
         self._snapshotPath = None
         self.paraVo = None
         self.batchBuildDialog = None  # 初始化批量构建对话框
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getUniqueKey(self):
         return self._uniqueKey
@@ -171,7 +173,7 @@ class FoaBuildWidget(QWidget):
         )
 
         if reply == QMessageBox.Yes:
-            XAUrl = G.getG("KBMgr").getBranchUrl(branch)
+            XAUrl = KBMgr.getBranchUrl(branch)
             resUrl = FolderUtil.join(XAUrl, "res")
             filesDict = FolderUtil.getFilesInfo(resUrl)
             if not filesDict:
@@ -232,12 +234,14 @@ class FoaBuildWidget(QWidget):
     def onClickQuicParasSync(self, force=False):
         """同步快速参数。"""
         name = self.ui.comboBox_quicParas.currentText()
+        if name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
+            if not AuthManager.is_admin_authenticated() and not force:
+                QMessageBox.warning(self, "同步失败", "线上方案不能修改。")
+                return
+
         if not name:
             QMessageBox.warning(self, "同步失败", "请先添加一条快速参数。")
-        elif not AuthManager.is_admin_authenticated() and name in ['and_hwzs', 'and_ajmzs', 'and_hwzs64', 'ios_ajmzs', 'ios_hwzs', 'mclient']:
-            # 线上方案不能修改
-            # and_hwzs、and_ajmzs、and_hwzs64、ios_ajmzs、ios_hwzs、mclient
-            QMessageBox.warning(self, "同步失败", "线上方案不能修改。")
+
         else:
             para_dict = self.getBuildDict()
             self.paraVo = ToolsMain.inputByDict(para_dict)
@@ -255,7 +259,7 @@ class FoaBuildWidget(QWidget):
         """处理分支或平台选择的变化。"""
         self.ui.lineEdit_pathSet.clear()
         branch = self.ui.comboBox_allBranches.currentText()
-        path = G.getG("KBMgr").getBranchUrl(branch)
+        path = KBMgr.getBranchUrl(branch)
         if path:
             self.ui.lineEdit_pathSet.setText(path)
         self.displaySnapshot()
@@ -312,7 +316,7 @@ class FoaBuildWidget(QWidget):
             return
         self.ui.lineEdit_pathSet.setText(path)
         branch = self.ui.comboBox_allBranches.currentText()
-        G.getG("KBMgr").setBranchUrl(branch, path)
+        KBMgr.setBranchUrl(branch, path)
 
     def onPathSet(self):
         """当工程路径文本变化时更新路径。"""
@@ -320,7 +324,7 @@ class FoaBuildWidget(QWidget):
         if not path:
             return
         branch = self.ui.comboBox_allBranches.currentText()
-        G.getG("KBMgr").setBranchUrl(branch, path)
+        KBMgr.setBranchUrl(branch, path)
 
     def setBuildDefault(self):
         """设置默认的构建参数。"""
@@ -416,7 +420,7 @@ class FoaBuildWidget(QWidget):
                 version_parts[2] = str(int(version_parts[2]) + 1)
                 new_sysversion = '.'.join(version_parts)
                 self.ui.lineEdit_sysversion.setText(new_sysversion)
-                G.getG('LogMgr').getLogger(self._uniqueKey).info(f"自动递增版本号成功，新版本号：{new_sysversion}")
+                LogMgr.getLogger(self._uniqueKey).info(f"自动递增版本号成功，新版本号：{new_sysversion}")
                 self.onClickQuicParasSync(force=True)
             else:
                 print("sysversion格式不正确")
@@ -445,11 +449,11 @@ class FoaBuildWidget(QWidget):
                     build_results.append((config_name, success))
                     if not success:
                         # 如果构建失败，停止批量构建
-                        G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"构建失败，停止批量构建。配置：{config_name}")
+                        LogMgr.getLogger(self._uniqueKey).warning(f"构建失败，停止批量构建。配置：{config_name}")
                         QMessageBox.warning(self, "批量构建中断", f"构建失败，批量构建已中断。配置：{config_name}")
                         break
                 else:
-                    G.getG('LogMgr').getLogger(self._uniqueKey).warning(f"未找到配置：{config_name}")
+                    LogMgr.getLogger(self._uniqueKey).warning(f"未找到配置：{config_name}")
             self.is_batch_building = False
             # 构建结果摘要
             summary = "\n".join(
@@ -464,7 +468,7 @@ class FoaBuildWidget(QWidget):
     def performBuild(self):
         """执行构建逻辑。"""
         paraDict = self.getBuildDict()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info('开始获取构建参数')
+        self.logger.info('开始获取构建参数')
         self.paraVo = ToolsMain.inputByDict(paraDict)
         self.paraVo.setUniqueKey(self._uniqueKey)
         self.paraVo.setFuncOutPath(self.getFuncOutPath())
@@ -479,7 +483,7 @@ class FoaBuildWidget(QWidget):
                 f"分支'{branches}'的工程路径中，没有文件夹'{res_target}'。\n"
                 "请修改参数面板中目标资源或检查工程路径中的指定文件夹。"
             )
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("目标资源不存在")
+            self.logger.warning("目标资源不存在")
             if self.is_batch_building:
                 # 在批量构建模式下，返回 False 表示失败
                 return False
@@ -491,19 +495,19 @@ class FoaBuildWidget(QWidget):
         if snapshot_path and not FolderUtil.exists(snapshot_path):
             self.ui.radioButton_snapshot.setChecked(False)
             self._snapshotPath = None
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning(
+            self.logger.warning(
                 f'快照文件不存在，此次构建取消自动化转资源：{snapshot_path}')
 
         foa_errors, successed = ToolsMain.main(self.paraVo)
         if not foa_errors and successed:
             self.addSysversion(self.paraVo.getVal('sysversion'))
             self.syncSnapshotCfg()
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("构建成功")
+            self.logger.info("构建成功")
             if not self.is_batch_building:
                 QMessageBox.information(self, "构建成功", "构建成功")
         else:
             error_msg = "构建失败，请检查日志以获取详细信息。"
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("构建失败")
+            self.logger.warning("构建失败")
             if self.is_batch_building:
                 # 在批量构建模式下，返回 False 表示失败
                 return False

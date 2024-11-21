@@ -5,16 +5,20 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from pathlib import Path
 
-import sample.src_references.common.g.G as G
+
+from sample.src_references.common.manager.KBMgr import KBMgr
+from sample.src_references.common.manager.LogMgr import LogMgr
+
 
 class DebugAnalysis:
     def __init__(self, kb_vo) -> None:
         self.vo = kb_vo
         self.errors = []
-        self.kbMgr = G.getG("KBMgr")
         self._uniqueKey = self.vo.getUniqueKey()
         self.logFilePath = None
         self.outputDir = Path(self.vo.getFuncOutPath())
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(self._uniqueKey)
 
     def calculate_beijing_time(self, timestamp, base_timestamp=946656000000000):
         base_time_utc = datetime.fromtimestamp(base_timestamp / 1_000_000, tz=timezone.utc)
@@ -115,10 +119,10 @@ class DebugAnalysis:
                 self.add_scene_titles(ws_objects)
                 wb.save(excel_file_revised)
 
-                G.getG('LogMgr').getLogger(self._uniqueKey).info("日志分析完成，结果已保存到 %s", excel_file_revised)
+                self.logger.info("日志分析完成，结果已保存到 %s", excel_file_revised)
 
         except Exception as e:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("日志分析失败：%s", str(e))
+            self.logger.error("日志分析失败：%s", str(e))
             self.errors.append(str(e))
 
     def format_worksheet(self, ws, max_col_width=35):
@@ -170,15 +174,15 @@ class DebugAnalysis:
             {"msg": '任务完成', 'rate': 0.1}
         ]
 
-        self.kbMgr.registerProgress(self._uniqueKey, stages)
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 0)
+        KBMgr.registerProgress(self._uniqueKey, stages)
+        KBMgr.onProgressUpdated(self._uniqueKey, 0)
         self.analyze_log()
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 1)
+        KBMgr.onProgressUpdated(self._uniqueKey, 1)
 
         if not self.errors:
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("日志分析全部完成，没有发现错误。")
+            self.logger.info("日志分析全部完成，没有发现错误。")
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).error("日志分析过程中发现错误：%s", self.errors)
+            self.logger.error("日志分析过程中发现错误：%s", self.errors)
 
-        self.kbMgr.onProgressUpdated(self._uniqueKey, 2)
+        KBMgr.onProgressUpdated(self._uniqueKey, 2)
         return self.errors

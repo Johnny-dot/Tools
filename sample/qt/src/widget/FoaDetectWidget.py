@@ -3,10 +3,12 @@ from PySide6.QtWidgets import QWidget
 from sample.qt.src.common import Enum
 from sample.qt.src.widget.ui_FoaDetectWidget import Ui_FoaDetectWidget
 
-import sample.src_references.common.g.G as G
+
 import sample.src_references.Main as ToolsMain
 import sample.src_references.common.utils.InputUtil as InputUtil
 import sample.src_references.common.utils.FolderUtil as FolderUtil
+from sample.src_references.common.manager.LogMgr import LogMgr
+
 
 class FoaDetectWidget(QWidget):
     def __init__(self, uniqueKey, callback):
@@ -20,7 +22,8 @@ class FoaDetectWidget(QWidget):
         self.ui = Ui_FoaDetectWidget()
         self.ui.setupUi(self)
         self.initDetectDuplicateFilesUI()
-        G.getG('LogMgr').getLogger(self._uniqueKey).info(uniqueKey)
+        self.logger = LogMgr.getLogger(self._uniqueKey)
+        self.logger.info(uniqueKey)
 
     def getFuncOutPath(self):
         FOA_BUILD_PATH = 'sample/output/'
@@ -64,7 +67,7 @@ class FoaDetectWidget(QWidget):
     def updatePendingResources(self, filesDict):
         for fileName, url in filesDict.items():
             if self._pendingResources.get(fileName):
-                G.getG('LogMgr').getLogger(self._uniqueKey).warning("文件%s已存在,进行地址更新" % fileName)
+                self.logger.warning("文件%s已存在,进行地址更新" % fileName)
             self._pendingResources[fileName] = url
 
 
@@ -79,9 +82,9 @@ class FoaDetectWidget(QWidget):
                 self.refreshPendingList(path)
 
             self._inPath = path
-            G.getG('LogMgr').getLogger(self._uniqueKey).info("成功设置输入路径:%s" % self._inPath)
+            self.logger.info("成功设置输入路径:%s" % self._inPath)
         else:
-            G.getG('LogMgr').getLogger(self._uniqueKey).warning("路径不存在:%s" % path)
+            self.logger.warning("路径不存在:%s" % path)
 
     def clearPendingList(self):
         self._pendingResources = {}

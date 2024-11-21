@@ -1,55 +1,51 @@
 import argparse
-
-import sample.src_references.common.g.G as G
-
+import importlib
 import sample.src_references.common.utils.InputUtil as InputUtil
-
 import sample.src_references.common.vos.FoaBuildVO as KB_VO
-
-from sample.src_references.common.manager.KBMgr import KBMgr
 from sample.src_references.common.manager.LogMgr import LogMgr
-from sample.src_references.plugin_branch_cover.BranchCover import BranchCover
-from sample.src_references.plugin_foa_build.FoaBuild import FoaBuild
-from sample.src_references.plugin_foa_detect.FoaDetect import FoaDetect
-from sample.src_references.plugin_gm_serialize.GMSerialize import GMSerialize
-from sample.src_references.plugin_res_convert.ResConvert import ResConvert
-from sample.src_references.plugin_duplicate_detect.DetectDuplicate import DetectDuplicate
-from sample.src_references.plugin_debug_analysis.DebugAnalysis import DebugAnalysis
 
 FOA_BUILD_VO = KB_VO.FOA_BUILD_VO
 TYPE_ANALYZE_PARAMS = KB_VO.TYPE_ANALYZE_PARAMS
 
+def dynamic_import(module_path, class_name):
+    """动态导入模块并获取类."""
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
+
 def main(paraVo):
     opt = paraVo.getVal('opt')
-    initManagers(paraVo)
     if opt == 'FOA_BUILD':
-        foabuild = FoaBuild(paraVo)
+        FoaBuildClass = dynamic_import('sample.src_references.plugin_foa_build.FoaBuild', 'FoaBuild')
+        foabuild = FoaBuildClass(paraVo)
         return foabuild.main()
     elif opt == 'RES_CONVERT':
-        resconvert = ResConvert(paraVo)
+        ResConvertClass = dynamic_import('sample.src_references.plugin_res_convert.ResConvert', 'ResConvert')
+        resconvert = ResConvertClass(paraVo)
         return resconvert.main()
     elif opt == 'BRANCH_COVER':
-        branchcover = BranchCover(paraVo)
+        BranchCoverClass = dynamic_import('sample.src_references.plugin_branch_cover.BranchCover', 'BranchCover')
+        branchcover = BranchCoverClass(paraVo)
         return branchcover.main()
     elif opt == 'FILES_SNAPSHOT':
         pass
     elif opt == 'DETECT_DUPLICATE_FILES':
-        detectduplicate = DetectDuplicate(paraVo)
+        DetectDuplicateClass = dynamic_import('sample.src_references.plugin_duplicate_detect.DetectDuplicate', 'DetectDuplicate')
+        detectduplicate = DetectDuplicateClass(paraVo)
         return detectduplicate.main()
     elif opt == 'FOA_DETECT':
-        foadetect = FoaDetect(paraVo)
+        FoaDetectClass = dynamic_import('sample.src_references.plugin_foa_detect.FoaDetect', 'FoaDetect')
+        foadetect = FoaDetectClass(paraVo)
         return foadetect.main()
     elif opt == 'DEBUG_ANALYSIS':
-        debuganalysis = DebugAnalysis(paraVo)
+        DebugAnalysisClass = dynamic_import('sample.src_references.plugin_debug_analysis.DebugAnalysis', 'DebugAnalysis')
+        debuganalysis = DebugAnalysisClass(paraVo)
         return debuganalysis.main()
     elif opt == 'GM_SERIALIZE':
-        gmserialize = GMSerialize(paraVo)
+        GMSerializeClass = dynamic_import('sample.src_references.plugin_gm_serialize.GMSerialize', 'GMSerialize')
+        gmserialize = GMSerializeClass(paraVo)
         return gmserialize.main()
     else:
         print('没有找到此工具:%s' % opt)
-
-def initManagers(paraVo):
-    KBMgr()
 
 def inputOneLine():
     for key in FOA_BUILD_VO:

@@ -1,36 +1,20 @@
+
 from sample.src_references.common.manager.Manager import Manager
 import sample.src_references.common.utils.JsonUtil as JsonUtil
 
-import threading
-import time
+from PySide6.QtCore import QTimer
 
-
-def Singleton(cls):
-    _instance = {}
-
-    def _singleton(*args, **kargs):
-        if cls not in _instance:
-            _instance[cls] = cls(*kargs, **kargs)
-        return _instance[cls]
-
-    return _singleton
-
-
-@Singleton
 class KBMgr(Manager):
-
     def __init__(self) -> None:
         super().__init__()
-        self.branchesUrl = {}
         self._progress = {}
+        self._timers = {}  # 存储每个进度的 QTimer
+        self.branchesUrl = {}
         self._progressCallback = None
         self._proListCallback = None
-        self._running = {}
-        self._threads = {}
-        self._min_duration = 2  # 设置每个阶段的最小持续时间（秒）
+        self._min_duration = 2  # 每个阶段的最小持续时间（秒）
 
     def setBranchUrl(self, name, url):
-        # self.branchesUrl[name] = url
         branches = JsonUtil.readInCfg("branches") or {}
         branches[name] = url
         JsonUtil.saveInCfg("branches", branches)
@@ -40,47 +24,26 @@ class KBMgr(Manager):
         path = branches.get(name)
         return path
 
-    # 进度条
+    # 设置进度条回调
     def addGUIProCallback(self, progressCallback):
         self._progressCallback = progressCallback
 
-    # 进度列表
+    # 设置进度列表回调
     def addGUIProListCallback(self, proListCallback):
         self._proListCallback = proListCallback
 
     def registerProgress(self, uniqueKey, stages):
-        if uniqueKey in self._threads and self._threads[uniqueKey].is_alive():
-            print(f"线程已存在，跳过注册: {uniqueKey}")
+        if uniqueKey in self._progress:
+            print(f"{uniqueKey} 已存在，跳过注册")
             return
+        for stage in stages:
+            stage.setdefault("percent", 0)
+        self._progress[uniqueKey] = stages
 
-        if not self._progress.get(uniqueKey):
-            for stage in stages:
-                stage['percent'] = 0
-            self._progress[uniqueKey] = stages
-            self._running[uniqueKey] = True
-            self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
-            self._threads[uniqueKey].start()
-        else:
-            print(uniqueKey, '重复的进度id')
-
-    def onProgressUpdated(self, uniqueKey, index):
-        # 停止当前阶段的假进度更新
-        self._running[uniqueKey] = False
-
-        stages = self.getProListInfo(uniqueKey)
-        if self._proListCallback:
-            self._proListCallback(stages[index]['msg'])
-
-        # 启动下一个阶段的假进度更新
-        if index < len(stages) - 1:
-            self._running[uniqueKey] = True
-            self._threads[uniqueKey] = threading.Thread(target=self._simulateProgress, args=(uniqueKey,))
-            self._threads[uniqueKey].start()
-        else:
-            self._running[uniqueKey] = False
-            # 确保在最后一个阶段完成后，进度为100%
-            if self._progressCallback:
-                self._progressCallback(100)
+        # 创建定时器并启动平滑更新
+        self._timers[uniqueKey] = QTimer()
+        self._timers[uniqueKey].timeout.connect(lambda: self._simulateProgress(uniqueKey))
+        self._timers[uniqueKey].start(50)  # 每 50 毫秒更新一次
 
     def getProgressNum(self, uniqueKey):
         stages = self.getProgress(uniqueKey) or []
@@ -93,44 +56,43 @@ class KBMgr(Manager):
     def getProgress(self, uniqueKey):
         return self._progress.get(uniqueKey)
 
-    # 进度列表
     def getProListInfo(self, uniqueKey):
         stages = self.getProgress(uniqueKey) or []
         return stages
 
     def _simulateProgress(self, uniqueKey):
-        stages = self.getProgress(uniqueKey)
+        stages = self._progress.get(uniqueKey, [])
+        """通过定时器逐步更新进度"""
         current_index = 0
 
-        while self._running[uniqueKey] and current_index < len(stages):
-            stage = stages[current_index]
+        for index, stage in enumerate(stages):
+            if stage['percent'] < stage['rate']:
+                current_index = index
+                break
 
-            # 动态计算 target_rate
-            target_rate = stage['rate'] + self.getProgressNum(uniqueKey) - sum(
-                s['percent'] for s in stages[:current_index]
-            )
+        # 如果所有阶段完成，停止定时器
+        if current_index >= len(stages):
+            self._timers[uniqueKey].stop()
+            self._timers.pop(uniqueKey, None)
+            return
 
-            start_time = time.time()
-            while self._running[uniqueKey] and stage['percent'] < target_rate:
-                # 更新阶段百分比，目标为 target_rate
-                stage['percent'] = min(target_rate, stage['percent'] + 0.01)
+        stage = stages[current_index]
 
-                # 更新进度条回调
-                if self._progressCallback:
-                    self._progressCallback(self.getProgressNum(uniqueKey))
+        # 平滑推进进度条
+        stage['percent'] = min(stage['percent'] + 0.5, stage['rate'])
 
-                # 更新进度列表回调
-                if self._proListCallback:
-                    self._proListCallback(stage['msg'])
+        # 更新进度条回调
+        if self._progressCallback:
+            self._progressCallback(self.getProgressNum(uniqueKey))
 
-                time.sleep(0.1)
+    def onProgressUpdated(self, uniqueKey, index):
+        """更新阶段完成后的逻辑进度"""
+        stages = self.getProgress(uniqueKey)
+        if index < len(stages):
+            stage = stages[index]
+            stage['percent'] = stage['rate']  # 将阶段进度直接调整为目标
+            if self._proListCallback:
+                self._proListCallback(stage['msg'])
 
-            # 确保每个阶段至少运行 _min_duration 秒
-            elapsed_time = time.time() - start_time
-            if elapsed_time < self._min_duration:
-                time.sleep(self._min_duration - elapsed_time)
-
-            current_index += 1
-
-    def stopProgress(self, uniqueKey):
-        self._running[uniqueKey] = False
+# 模块级单例
+KBMgr = KBMgr()

@@ -74,7 +74,6 @@ class KB_VO(ParaVO):
             for k,v in pPara.items():
                 self.setVal(k, v)
         else:
-            # G.getG('LogMgr').error(runType, '不支持的操作类型%s'%runType)
             print('无效的vo类型')
 
 
