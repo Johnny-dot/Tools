@@ -92,6 +92,9 @@ class DetectDuplicate:
         # 主入口，返回检测到的重复文件及统计信息
         duplicates, duplicate_groups, total_size = self.find_duplicates()
 
+        # 按照 size 从大到小排序
+        sorted_duplicates = dict(sorted(duplicates.items(), key=lambda x: x[1]['size'], reverse=True))
+
         # 获取输出路径
         output_path = self.paraVo.getFuncOutPath()
 
@@ -102,7 +105,7 @@ class DetectDuplicate:
         # 将重复文件信息持久化为 JSON 格式
         try:
             with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump(duplicates, f, ensure_ascii=False, indent=4)
+                json.dump(sorted_duplicates, f, ensure_ascii=False, indent=4)
         except IOError as error:
             print(f"写文件时发生错误! {error}")
 
