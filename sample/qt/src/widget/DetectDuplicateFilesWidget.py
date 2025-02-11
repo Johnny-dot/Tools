@@ -186,8 +186,9 @@ class DetectDuplicateFilesWidget(QWidget):
         self.ui.listWidget_pending.clear()
         if duplicates:
             self._pendingResources = duplicates  # 更新 _pendingResources 以供后续使用
-            for md5, info in duplicates.items():
-                item = QListWidgetItem(os.path.basename(info['paths'][0]))
+            sorted_duplicates = sorted(duplicates.items(), key=lambda x: x[1]['size'], reverse=True)
+            for md5, info in sorted_duplicates:
+                item = QListWidgetItem(f"{os.path.basename(info['paths'][0])} [{info.get('formatted_size')}]")
                 item.setData(Qt.UserRole, md5)
                 self.ui.listWidget_pending.addItem(item)
 
