@@ -508,6 +508,7 @@ class FoaBuildWidget(QWidget):
         else:
             error_msg = "构建失败，请检查日志以获取详细信息。"
             self.logger.warning("构建失败")
+            self.logger.info(foa_errors)
             if self.is_batch_building:
                 # 在批量构建模式下，返回 False 表示失败
                 return False

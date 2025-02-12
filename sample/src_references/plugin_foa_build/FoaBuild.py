@@ -185,7 +185,7 @@ class FoaBuild:
             self.logger.warning("Lua syntax errors found in the following files:")
             for file_path, error_message in syntax_errors:
                 self.logger.warning(f"File: {file_path}, Error: {error_message}")
-            return False
+            return syntax_errors, False
 
         # 检查code文件夹中的文件名是否小写
         is_correct_code, incorrect_files_code = FileUtil.check_lowercase_filenames(code_path)
@@ -347,8 +347,8 @@ class FoaBuild:
         self.logger.info("初始化工作环境")
 
         # 检测代码是否合规
-        isCorrect = self.checkCode()
-        if not isCorrect: return
+        syntax_errors, isCorrect = self.checkCode()
+        if not isCorrect: return syntax_errors, False
         KBMgr.onProgressUpdated(self._uniqueKey, 1)
         self.logger.info("检测代码是否合规完成")
 
@@ -370,6 +370,8 @@ class FoaBuild:
         foaErrors = self.checkFoa()
         KBMgr.onProgressUpdated(self._uniqueKey, 5)
         self.logger.info("校验FOA是否合规完成")
+        if foaErrors:
+            return foaErrors, False
 
         # 转移FOA至outpath
         self.dealOutPut()
