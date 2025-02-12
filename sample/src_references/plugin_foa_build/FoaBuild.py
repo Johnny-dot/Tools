@@ -204,11 +204,11 @@ class FoaBuild:
         # 如果任一检查不通过，则返回False
         if not is_correct_code:
             self.logger.warning("Filename check did not pass. Please review the errors above.")
-            return False
+            return incorrect_files_code, False
 
         self.logger.info("Code check passed.")
 
-        return True
+        return [], True
 
     def getBat(self, php):
         if self.vo.getVal_Lua("tag") == 'mclient':
