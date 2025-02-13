@@ -106,8 +106,8 @@ class ResConvert:
         stages = [
             {"msg":'开始复制源文件到工作路径', 'rate':0.3}
             ,{"msg":'开始转资源', 'rate':0.4}
-            ,{"msg":'将已完成资源转移到目标路径', 'rate':0.3}
-            ,{"msg":'完成'}
+            ,{"msg":'将已完成资源转移到目标路径', 'rate':0.2}
+            ,{"msg":'完成', 'rate':0.1}
         ]
         KBMgr.registerProgress(self.vo.getUniqueKey(), stages)
         self.dealSourceFiles()
